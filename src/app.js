@@ -1,3 +1,5 @@
+"use strict";
+
 const express = require("express");
 const config = require("./utils/config");
 const morgan = require("morgan");
