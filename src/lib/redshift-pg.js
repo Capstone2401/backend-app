@@ -134,6 +134,7 @@ const events = {
          event_day, user_id
      )
      SELECT
+       event_day,
        MIN(event_count) AS min_event_count_per_user
      FROM
        events_per_user_per_day`,
@@ -163,6 +164,7 @@ const events = {
          event_month, user_id
      )
      SELECT
+       event_month,
        MIN(event_count) AS min_event_count_per_user
      FROM
        events_per_user_per_month`,
@@ -192,6 +194,7 @@ const events = {
          event_day, user_id
      )
      SELECT
+       event_day,
        MAX(event_count) AS max_event_count_per_user
      FROM
        events_per_user_per_day`,
@@ -221,6 +224,7 @@ const events = {
          event_month, user_id
      )
      SELECT
+       event_month,
        MAX(event_count) AS max_event_count_per_user
      FROM
        events_per_user_per_month`,
