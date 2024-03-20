@@ -2,7 +2,11 @@ version: '3.8'
 
 services:
   backend:
-    image: backend-app:loaf
+    image: backend-app:loaf # put our final backend app image here from docker hub
+    environment:
+      HOST: "0.0.0.0"
+      PORT: 3000
+      REDSHIFT_CONN_STRING: "${REDSHIFT_CONN_STRING}"
     ports:
       - "3000:3000"
     depends_on:
@@ -16,6 +20,6 @@ services:
     ports:
       - "5439:5439"  # Assuming your Redshift port is 5439
     command: >
-      sh -c "docker-entrypoint.sh postgres && sleep 10 && psql ${REDSHIFT_CONN_STRING} -f /sql/redshift-tables.sql"
+      sh -c "psql ${REDSHIFT_CONN_STRING} -f ./sql/redshift-tables.sql"
     volumes:
-      - ./redshift-tables.sql:/sql/redshift-tables.sql
+      - ./src/sql/redshift-tables.sql:/sql/redshift-tables.sql
