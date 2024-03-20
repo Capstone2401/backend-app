@@ -48,7 +48,7 @@ const events = {
       FROM
         events
       WHERE
-        CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE
+        (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
         AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       GROUP BY
         event_day`,
@@ -74,7 +74,7 @@ const events = {
       FROM
         events
       WHERE
-        CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE
+        (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
         AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       GROUP BY
         event_month`,
@@ -560,7 +560,7 @@ const users = {
       FROM
         events
       WHERE
-        CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE
+        (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
         AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       GROUP BY
         event_day`,
@@ -586,7 +586,7 @@ const users = {
       FROM
         events
       WHERE
-        CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE
+        (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
         AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       GROUP BY
         event_month`,
