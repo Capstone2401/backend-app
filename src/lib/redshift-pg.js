@@ -48,7 +48,7 @@ const events = {
       FROM
         events
       WHERE
-        CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE
+        CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE
         AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       GROUP BY
         event_day`,
@@ -74,7 +74,7 @@ const events = {
       FROM
         events
       WHERE
-        CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE
+        CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE
         AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       GROUP BY
         event_month`,
@@ -138,7 +138,7 @@ const events = {
        FROM
          events
        WHERE
-         (CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+         (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
          AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
        GROUP BY
          event_day, user_id
@@ -174,7 +174,7 @@ const events = {
        FROM
          events
        WHERE
-         (CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+         (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
          AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
        GROUP BY
          event_month, user_id
@@ -246,7 +246,7 @@ const events = {
        FROM
          events
        WHERE
-         (CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+         (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
          AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
        GROUP BY
          event_day, user_id
@@ -282,7 +282,7 @@ const events = {
        FROM
          events
        WHERE
-         (CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+         (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
          AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
        GROUP BY
          event_month, user_id
@@ -354,7 +354,7 @@ const events = {
        FROM
          events
        WHERE
-         (CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+         (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
          AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
        GROUP BY
          event_day, user_id
@@ -390,7 +390,7 @@ const events = {
        FROM
          events
        WHERE
-         (CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+         (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
          AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
        GROUP BY
          event_month, user_id
@@ -462,7 +462,7 @@ const events = {
        FROM
          events
        WHERE
-         (CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+         (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
          AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
        GROUP BY
          event_day, user_id
@@ -498,7 +498,7 @@ const events = {
        FROM
          events
        WHERE
-         (CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+         (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
          AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
        GROUP BY
          event_month, user_id
@@ -560,7 +560,7 @@ const users = {
       FROM
         events
       WHERE
-        CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE
+        CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE
         AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       GROUP BY
         event_day`,
@@ -586,7 +586,7 @@ const users = {
       FROM
         events
       WHERE
-        CAST($1 AS DATE) IS NULL OR event_created BETWEEN $1 AND SYSDATE
+        CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE
         AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       GROUP BY
         event_month`,
@@ -599,14 +599,12 @@ const users = {
 };
 
 // events.listAll().then((val) => console.log(val));
-// events
-//   .getTotalbyDay({ previous: 30, event_name: "Login" })
-//   .then((val) => console.log(val));
-//
+/* events.getTotalByDay({ previous: 30 }).then((val) => console.log(val)); */
+
 // events
 //   .getTotalByMonth({ previous: 1, event_name: "Login" })
 //   .then((val) => console.log(val));
-//
+
 // events.getMaxPerUserByDay({ previous: 30 }).then((val) => console.log(val));
 
 // events
