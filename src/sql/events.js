@@ -9,7 +9,7 @@ module.exports = {
 
   totalByHour: `
     SELECT
-      TO_CHAR(event_created, 'YYYY-MM-DD HH24:00') AS event_hour,
+      DATE_TRUNC('hour', event_created) AS event_hour,
       COUNT(DISTINCT event_id) AS calculated_value
     FROM
       events
@@ -18,12 +18,12 @@ module.exports = {
       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
-      event_hour
+      event_hour;
   `,
 
   totalByDay: `
     SELECT
-      TO_CHAR(event_created, 'YYYY-MM-DD') AS event_day,
+      DATE_TRUNC('day', event_created) AS event_day,
       COUNT(DISTINCT event_id) AS calculated_value
     FROM
       events
@@ -32,12 +32,13 @@ module.exports = {
       AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
-      event_day
+      event_day;
+
   `,
 
   totalByMonth: `
     SELECT
-      TO_CHAR(event_created, 'YYYY-MM') AS event_month,
+      DATE_TRUNC('month', event_created) AS event_month,
       COUNT(DISTINCT event_id) AS calculated_value
     FROM
       events
@@ -46,7 +47,8 @@ module.exports = {
       AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
-      event_month
+      event_month;
+
   `,
 
   averagePerUserByHour: `
