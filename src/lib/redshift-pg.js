@@ -3,13 +3,43 @@
 const dbQuery = require("../utils/db-query");
 const eventsSQL = require("../sql/events.js");
 const usersSQL = require("../sql/users.js");
+const formatEvents = require("../utils/format-events.js");
+const formatUsers = require("../utils/format-users.js");
 
 const events = {
   async listAll() {
     const result = await dbQuery(eventsSQL.listAll);
     return result.rows;
   },
-  async getTotalByHour({ previous, event_name }) {
+
+  async listAllAttributes() {
+    const transformedResult = {};
+    const result = await dbQuery(eventsSQL.listAllAttributes);
+
+    result.rows.forEach((record) => {
+      const attributes = JSON.parse(record.event_attributes);
+
+      for (const key in attributes) {
+        transformedResult[key] = transformedResult[key] || [];
+        transformedResult[key].push(attributes[key]);
+      }
+    });
+
+    for (const attribute in transformedResult) {
+      transformedResult[attribute] = Array.from(
+        new Set(transformedResult[attribute]),
+      );
+    }
+
+    return transformedResult;
+  },
+
+  async getTotalByHour({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -21,12 +51,19 @@ const events = {
       eventsSQL.totalByHour,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatEvents.pastNHoursData(result.rows, previous);
   },
 
-  async getTotalByDay({ previous, event_name }) {
+  async getTotalByDay({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -38,12 +75,19 @@ const events = {
       eventsSQL.totalByDay,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatEvents.pastNDaysData(result.rows, previous);
   },
 
-  async getTotalByMonth({ previous, event_name }) {
+  async getTotalByMonth({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -55,12 +99,19 @@ const events = {
       eventsSQL.totalByMonth,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatEvents.pastNMonthsData(result.rows, previous);
   },
 
-  async getAveragePerUserByHour({ previous, event_name }) {
+  async getAveragePerUserByHour({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -72,12 +123,19 @@ const events = {
       eventsSQL.averagePerUserByHour,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatEvents.pastNHoursData(result.rows, previous);
   },
 
-  async getAveragePerUserByDay({ previous, event_name }) {
+  async getAveragePerUserByDay({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -89,12 +147,19 @@ const events = {
       eventsSQL.averagePerUserByDay,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatEvents.pastNDaysData(result.rows, previous);
   },
 
-  async getAveragePerUserByMonth({ previous, event_name }) {
+  async getAveragePerUserByMonth({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -106,167 +171,237 @@ const events = {
       eventsSQL.averagePerUserByMonth,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatEvents.pastNMonthsData(result.rows, previous);
   },
 
-  async getMinPerUserByHour({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.minPerUserByHour,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMinPerUserByDay({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.minPerUserByDay,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMinPerUserByMonth({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.minPerUserByMonth,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMaxPerUserByHour({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.minPerUserByHour,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMaxPerUserByDay({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.maxPerUserByDay,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMaxPerUserByMonth({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.maxPerUserByMonth,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows[-1].max_event_count_per_user;
-  },
-
-  async getMedianPerUserByHour({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
-
-    const result = await dbQuery(
-      events.getMedianPerUserByHour,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMedianPerUserByDay({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.medianPerUserByDay,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMedianPerUserByMonth({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.medianPerUserByMonth,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
+  //   async getMinPerUserByHour({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setHours(dateRangeStart.getHours() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       eventsSQL.minPerUserByHour,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNHoursData(result.rows, previous);
+  //   },
+  //
+  //   async getMinPerUserByDay({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setDate(dateRangeStart.getDate() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       eventsSQL.minPerUserByDay,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNDaysData(result.rows, previous);
+  //   },
+  //
+  //   async getMinPerUserByMonth({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       eventsSQL.minPerUserByMonth,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNMonthsData(result.rows, previous);
+  //   },
+  //
+  //   async getMaxPerUserByHour({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setHours(dateRangeStart.getHours() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       eventsSQL.minPerUserByHour,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNHoursData(result.rows, previous);
+  //   },
+  //
+  //   async getMaxPerUserByDay({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setDate(dateRangeStart.getDate() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       eventsSQL.maxPerUserByDay,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNDaysData(result.rows, previous);
+  //   },
+  //
+  //   async getMaxPerUserByMonth({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       eventsSQL.maxPerUserByMonth,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNMonthsData(result.rows, previous);
+  //   },
+  //
+  //   async getMedianPerUserByHour({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setHours(dateRangeStart.getHours() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       events.getMedianPerUserByHour,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNHoursData(result.rows, previous);
+  //   },
+  //
+  //   async getMedianPerUserByDay({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setDate(dateRangeStart.getDate() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       eventsSQL.medianPerUserByDay,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNDaysData(result.rows, previous);
+  //   },
+  //
+  //   async getMedianPerUserByMonth({
+  //     previous,
+  //     event_name,
+  //     filterAttribute,
+  //     filterAttributeValue,
+  //   }) {
+  //     let dateRangeStart;
+  //
+  //     if (previous) {
+  //       dateRangeStart = new Date();
+  //       dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
+  //     }
+  //
+  //     const result = await dbQuery(
+  //       eventsSQL.medianPerUserByMonth,
+  //       dateRangeStart,
+  //       event_name,
+  //       filterAttribute,
+  //       filterAttributeValue,
+  //     );
+  //
+  //     return formatEvents.pastNMonthsData(result.rows, previous);
+  //   },
 };
 
 const users = {
-  async getTotalByHour({ previous, event_name }) {
+  async getTotalByHour({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -278,12 +413,19 @@ const users = {
       usersSQL.totalByHour,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatUsers.pastNHoursData(result.rows, previous);
   },
 
-  async getTotalByDay({ previous, event_name }) {
+  async getTotalByDay({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -295,12 +437,19 @@ const users = {
       usersSQL.totalByDay,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatUsers.pastNDaysData(result.rows, previous);
   },
 
-  async getTotalByMonth({ previous, event_name }) {
+  async getTotalByMonth({
+    previous,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  }) {
     let dateRangeStart;
 
     if (previous) {
@@ -312,9 +461,11 @@ const users = {
       usersSQL.totalByMonth,
       dateRangeStart,
       event_name,
+      filterAttribute,
+      filterAttributeValue,
     );
 
-    return result.rows;
+    return formatUsers.pastNMonthsData(result.rows, previous);
   },
 };
 
@@ -323,8 +474,13 @@ module.exports = {
   users,
 };
 
-// events.listAll().then((val) => console.log(val));
-// events.getTotalByDay({ previous: 30 }).then((val) => console.log(val));
+// events.listAllAttributes().then((val) => console.log(val));
+events
+  .getMinPerUserByHour({
+    previous: 48,
+    event_name: "Login",
+  })
+  .then((val) => console.log(val));
 
 // events
 //   .getTotalByMonth({ previous: 1, event_name: "Login" })
@@ -335,8 +491,13 @@ module.exports = {
 // events
 //   .getAveragePerUserByMonth({ previous: 48 })
 //   .then((val) => console.log(val));
-// //
-// users.getTotalByDay({ previous: 1 }).then((val) => console.log(val));
+//
+// events
+//   .getAveragePerUserByHour({
+//     previous: 48,
+//     event_name: "Purchase",
+//   })
+//   .then((val) => console.log(val));
 //
 // users
 //   .getTotalByMonth({ previous: 1, event_name: "Login" })
