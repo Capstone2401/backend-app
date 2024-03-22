@@ -8,6 +8,7 @@ module.exports = {
     WHERE
       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
+      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
       event_hour
   `,
@@ -21,6 +22,7 @@ module.exports = {
     WHERE
       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
       AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
+      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
       event_day
   `,
@@ -34,6 +36,7 @@ module.exports = {
     WHERE
       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
       AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
+      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
       event_month
   `,
