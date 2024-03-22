@@ -7,8 +7,7 @@ function pastNHoursData(records, previous) {
     const hour = 1000 * 60 * 60;
     const hourTimestamp = new Date(currentDate.getTime() - idx * hour);
 
-    const formattedTimestamp =
-      hourTimestamp.toISOString().replace("T", " ").slice(0, 13) + ":00";
+    const formattedTimestamp = hourTimestamp.toISOString().slice(0, 13) + ":00";
 
     pastNHours[formattedTimestamp] = {
       event_hour: formattedTimestamp,
@@ -17,7 +16,7 @@ function pastNHoursData(records, previous) {
   }
 
   for (const record of records) {
-    const hourKey = record.event_hour.slice(0, 13) + ":00";
+    const hourKey = record.event_hour.toISOString().slice(0, 13) + ":00";
     if (pastNHours[hourKey]) {
       pastNHours[hourKey].calculated_value = Number(record.calculated_value);
     }
@@ -45,7 +44,7 @@ function pastNDaysData(records, previous) {
 
   // Loop through the records and insert them into the right day spots
   for (const record of records) {
-    const dayKey = record.event_day.slice(0, 10); // Extracting only date part
+    const dayKey = record.event_day.toISOString().slice(0, 10); // Extracting only date part
     if (pastNDays[dayKey]) {
       pastNDays[dayKey].calculated_value = Number(record.calculated_value);
     }
@@ -74,7 +73,7 @@ function pastNMonthsData(records, previous) {
   }
 
   for (const record of records) {
-    const monthKey = record.event_month.slice(0, 7); // Extracting only year and month part
+    const monthKey = record.event_month.toISOString().slice(0, 7); // Extracting only year and month part
     if (pastNMonths[monthKey]) {
       pastNMonths[monthKey].calculated_value = Number(record.calculated_value);
     }

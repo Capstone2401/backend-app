@@ -1,7 +1,7 @@
 module.exports = {
   totalByHour: `
     SELECT
-       TO_CHAR(event_created, 'YYYY-MM-DD HH24:00') AS event_hour,
+       DATE_TRUNC('hour', event_created) AS event_hour,
        COUNT(DISTINCT user_id) AS user_count
     FROM
       events
@@ -15,7 +15,7 @@ module.exports = {
 
   totalByDay: `
     SELECT
-      TO_CHAR(event_created, 'YYYY-MM-DD') AS event_day,
+      DATE_TRUNC('day', event_created) AS event_day,
       COUNT(DISTINCT user_id) AS user_count
     FROM
       events
@@ -29,7 +29,7 @@ module.exports = {
 
   totalByMonth: `
     SELECT
-      TO_CHAR(event_created, 'YYYY-MM') AS event_month,
+      DATE_TRUNC('month', event_created) AS event_month,
       COUNT(DISTINCT user_id) AS user_count
     FROM
       events
