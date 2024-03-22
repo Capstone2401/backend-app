@@ -54,7 +54,7 @@ module.exports = {
   averagePerUserByHour: `
     WITH events_per_user_per_hour AS (
         SELECT
-            TO_CHAR(event_created, 'YYYY-MM-DD HH24:00') AS event_hour,
+            DATE_TRUNC('hour', event_created) AS event_hour,
             COUNT(DISTINCT event_id) AS calculated_value,
             COUNT(DISTINCT u.user_id) AS user_count
         FROM
@@ -66,7 +66,7 @@ module.exports = {
             AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
             AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
         GROUP BY
-            TO_CHAR(e.event_created, 'YYYY-MM-DD HH24:00')
+            DATE_TRUNC('hour', e.event_created)
     )
     SELECT
         event_hour,
@@ -80,7 +80,7 @@ module.exports = {
   averagePerUserByDay: `
     WITH events_per_user_per_day AS (
       SELECT
-          TO_CHAR(e.event_created, 'YYYY-MM-DD') AS event_day,
+          DATE_TRUNC('day', e.event_created) AS event_day,
           COUNT(DISTINCT e.event_id) AS calculated_value,
           COUNT(DISTINCT u.user_id) AS user_count
       FROM
@@ -92,23 +92,22 @@ module.exports = {
           AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
           AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
       GROUP BY
-          event_day
+          DATE_TRUNC('day', e.event_created)
+    )
 
-   )
-  
-   SELECT
+    SELECT
      event_day,
-     CAST(SUM(calculated_value) AS FLOAT) / NULLIF(user_count, 0) AS calculated_value
-   FROM
+     CAST(SUM(calculated_value) AS FLOAT) / NULLIF(SUM(user_count), 0) AS calculated_value
+    FROM
      events_per_user_per_day
-   GROUP BY
-     event_day, user_count
-  `,
+    GROUP BY
+     event_day; 
+`,
 
   averagePerUserByMonth: `
     WITH events_per_user_per_month AS (
         SELECT
-            TO_CHAR(event_created, 'YYYY-MM') AS event_month,
+            DATE_TRUNC('month', event_created) AS event_month,
             COUNT(DISTINCT event_id) AS calculated_value,
             COUNT(DISTINCT u.user_id) AS user_count
         FROM
@@ -120,7 +119,7 @@ module.exports = {
             AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
             AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
         GROUP BY
-            TO_CHAR(e.event_created, 'YYYY-MM')
+            DATE_TRUNC('month', e.event_created)
     )
     SELECT
         event_month,
@@ -128,84 +127,13 @@ module.exports = {
     FROM
         events_per_user_per_month
     GROUP BY
-        event_month;  `,
+        event_month;
+`,
 
   minPerUserByHour: `
-    WITH events_per_user_per_day AS (
-     SELECT
-       TO_CHAR(event_created, 'YYYY-MM-DD hh24') AS event_day,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_day, user_id
-   )
-   SELECT
-     event_day,
-     MIN(calculated_value) AS calculated_value
-   FROM
-     events_per_user_per_day
-   GROUP BY
-     event_day
-  `,
-
-  minPerUserByDay: `
-    WITH events_per_user_per_day AS (
-     SELECT
-       TO_CHAR(event_created, 'YYYY-MM-DD') AS event_day,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_day, user_id
-   )
-   SELECT
-     event_day,
-     MIN(calculated_value) AS calculated_value
-   FROM
-     events_per_user_per_day
-   GROUP BY
-     event_day
-  `,
-
-  minPerUserByMonth: `
-    WITH events_per_user_per_month AS (
-     SELECT
-       TO_CHAR(event_created, 'YYYY-MM') AS event_month,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_month, user_id
-   )
-   SELECT
-     event_month,
-     MIN(calculated_value) AS calculated_value
-   FROM
-     events_per_user_per_month
-   GROUP BY
-     event_month
-  `,
-
-  maxPerUserByHour: `
     WITH events_per_user_per_hour AS (
      SELECT
-       TO_CHAR(event_created, 'YYYY-MM-DD HH24:00') AS event_hour,
+       DATE_TRUNC('hour', event_created) AS event_hour,
        COUNT(DISTINCT event_id) AS calculated_value,
        user_id
      FROM
@@ -219,17 +147,17 @@ module.exports = {
    )
    SELECT
      event_hour,
-     MAX(calculated_value) AS calculated_value
+     MIN(calculated_value) AS calculated_value
    FROM
      events_per_user_per_hour
    GROUP BY
      event_hour
   `,
 
-  maxPerUserByDay: `
+  minPerUserByDay: `
     WITH events_per_user_per_day AS (
      SELECT
-       TO_CHAR(event_created, 'YYYY-MM-DD') AS event_day,
+       DATE_TRUNC('hour', event_created) AS event_day,
        COUNT(DISTINCT event_id) AS calculated_value,
        user_id
      FROM
@@ -240,20 +168,20 @@ module.exports = {
        AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
      GROUP BY
        event_day, user_id
-   )
-   SELECT
+    )
+    SELECT
      event_day,
-     MAX(calculated_value) AS calculated_value
-   FROM
+     MIN(calculated_value) AS calculated_value
+    FROM
      events_per_user_per_day
-   GROUP BY
-     event_day
+    GROUP BY
+     event_day;
   `,
 
-  maxPerUserByMonth: `
+  minPerUserByMonth: `
     WITH events_per_user_per_month AS (
      SELECT
-       TO_CHAR(event_created, 'YYYY-MM') AS event_month,
+       DATE_TRUNC('month', event_created) AS event_month,
        COUNT(DISTINCT event_id) AS calculated_value,
        user_id
      FROM
@@ -264,124 +192,187 @@ module.exports = {
        AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
      GROUP BY
        event_month, user_id
-   )
-   SELECT
+    )
+    SELECT
      event_month,
-     MAX(calculated_value) AS calculated_value
-   FROM
+     MIN(calculated_value) AS calculated_value
+    FROM
      events_per_user_per_month
-   GROUP BY
-     event_month
+    GROUP BY
+     event_month;
   `,
 
+  maxPerUserByHour: `
+    WITH events_per_user_per_hour AS (
+     SELECT
+       DATE_TRUNC('hour', event_created) AS event_hour,
+       COUNT(DISTINCT event_id) AS calculated_value,
+       user_id
+     FROM
+       events
+     WHERE
+       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
+       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
+     GROUP BY
+       event_hour, user_id
+    )
+    SELECT
+     event_hour,
+     MAX(calculated_value) AS calculated_value
+    FROM
+     events_per_user_per_hour
+    GROUP BY
+     event_hour;
+  `,
+
+  maxPerUserByDay: `
+    WITH events_per_user_per_day AS (
+     SELECT
+       DATE_TRUNC('day', event_created) AS event_day,
+       COUNT(DISTINCT event_id) AS calculated_value,
+       user_id
+     FROM
+       events
+     WHERE
+       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
+       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
+     GROUP BY
+       event_day, user_id
+    )
+    SELECT
+     event_day,
+     MAX(calculated_value) AS calculated_value
+    FROM
+     events_per_user_per_day
+    GROUP BY
+     event_day;  `,
+
+  maxPerUserByMonth: `
+    WITH events_per_user_per_month AS (
+     SELECT
+       DATE_TRUNC('month', event_created) AS event_month,
+       COUNT(DISTINCT event_id) AS calculated_value,
+       user_id
+     FROM
+       events
+     WHERE
+       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
+       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
+     GROUP BY
+       event_month, user_id
+    )
+    SELECT
+     event_month,
+     MAX(calculated_value) AS calculated_value
+    FROM
+     events_per_user_per_month
+    GROUP BY
+     event_month;  `,
+
   medianPerUserByHour: `
-WITH event_counts AS (
+    WITH event_counts AS (
       SELECT
         user_id,
-        TO_CHAR(event_created, 'YYYY-MM-DD HH24:00') AS event_hour,
+        DATE_TRUNC('hour', event_created) AS event_hour,
         COUNT(DISTINCT e.event_id) as num_events
       FROM events e
-            WHERE
-              (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
-              AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-              AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
-     GROUP BY 
-       user_id,
-       TO_CHAR(event_created, 'YYYY-MM-DD HH24:00')
-
+      WHERE
+        (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
+        AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
+        AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
+      GROUP BY 
+        user_id,
+        DATE_TRUNC('hour', event_created)
     ), 
-  user_event_counts AS (
-       SELECT
-            u.user_id,
-            u.user_created,
-            COALESCE(ec.event_hour, (SELECT event_hour FROM event_counts WHERE event_hour IS NOT NULL LIMIT 1)) AS event_hour,
-            CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
-        FROM
-           users u
-        LEFT JOIN event_counts ec ON
-            u.user_id = ec.user_id
+    user_event_counts AS (
+      SELECT
+        u.user_id,
+        u.user_created,
+        COALESCE(ec.event_hour, (SELECT event_hour FROM event_counts WHERE event_hour IS NOT NULL LIMIT 1)) AS event_hour,
+        CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
+      FROM
+        users u
+      LEFT JOIN event_counts ec ON
+        u.user_id = ec.user_id
     )
-
     SELECT
-        event_hour,
-        CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
+      event_hour,
+      CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
     FROM
-        user_event_counts
+      user_event_counts
     WHERE user_created < event_hour
     GROUP BY
       event_hour;`,
 
   medianPerUserByDay: `
-WITH event_counts AS (
+    WITH event_counts AS (
       SELECT
         user_id,
-        TO_CHAR(event_created, 'YYYY-MM-DD') AS event_day,
+        DATE_TRUNC('day', event_created) AS event_day,
         COUNT(DISTINCT e.event_id) as num_events
       FROM events e
-            WHERE
-              (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
-              AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-              AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
-     GROUP BY 
-       user_id,
-       TO_CHAR(event_created, 'YYYY-MM-DD')
-
+      WHERE
+        (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
+        AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
+        AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
+      GROUP BY 
+        user_id,
+        DATE_TRUNC('day', event_created)
     ), 
-  user_event_counts AS (
-       SELECT
-            u.user_id,
-            u.user_created,
-            COALESCE(ec.event_day, (SELECT event_day FROM event_counts WHERE event_day IS NOT NULL LIMIT 1)) AS event_day,
-            CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
-        FROM
-           users u
-        LEFT JOIN event_counts ec ON
-            u.user_id = ec.user_id
+    user_event_counts AS (
+      SELECT
+        u.user_id,
+        u.user_created,
+        COALESCE(ec.event_day, (SELECT event_day FROM event_counts WHERE event_day IS NOT NULL LIMIT 1)) AS event_day,
+        CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
+      FROM
+        users u
+      LEFT JOIN event_counts ec ON
+        u.user_id = ec.user_id
     )
-
     SELECT
-        event_day,
-        CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
+      event_day,
+      CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
     FROM
-        user_event_counts
+      user_event_counts
     WHERE user_created < event_day
     GROUP BY
-      event_day;
-  `,
+      event_day; `,
 
   medianPerUserByMonth: `
-WITH event_counts AS (
+    WITH event_counts AS (
       SELECT
         user_id,
-        TO_CHAR(event_created, 'YYYY-MM') AS event_month,
+        DATE_TRUNC('month', event_created) AS event_month,
         COUNT(DISTINCT e.event_id) as num_events
       FROM events e
-            WHERE
-              (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
-              AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-              AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
-     GROUP BY 
-       user_id,
-       TO_CHAR(event_created, 'YYYY-MM')
-
+      WHERE
+        (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
+        AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
+        AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
+      GROUP BY 
+        user_id,
+        DATE_TRUNC('month', event_created)
     ), 
-  user_event_counts AS (
-       SELECT
-            u.user_id,
-            u.user_created,
-            COALESCE(ec.event_month, (SELECT event_month FROM event_counts WHERE event_month IS NOT NULL LIMIT 1)) AS event_month,
-            CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
-        FROM
-           users u
-        LEFT JOIN event_counts ec ON
-            u.user_id = ec.user_id
+    user_event_counts AS (
+      SELECT
+        u.user_id,
+        u.user_created,
+        COALESCE(ec.event_month, (SELECT event_month FROM event_counts WHERE event_month IS NOT NULL LIMIT 1)) AS event_month,
+        CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
+      FROM
+        users u
+      LEFT JOIN event_counts ec ON
+        u.user_id = ec.user_id
     )
-
     SELECT
-        event_month,
-        CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
+      event_month,
+      CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
     FROM
-        user_event_counts
+      user_event_counts
     WHERE user_created < event_month
     GROUP BY
       event_month;
