@@ -473,32 +473,3 @@ module.exports = {
   events,
   users,
 };
-
-// events.listAllAttributes().then((val) => console.log(val));
-events
-  .getMedianPerUserByMonth({
-    previous: 4,
-    event_name: "Login",
-  })
-  .then((val) => console.log(val));
-
-// events
-//   .getTotalByMonth({ previous: 1, event_name: "Login" })
-//   .then((val) => console.log(val));
-//
-// events.getMaxPerUserByDay({ previous: 30 }).then((val) => console.log(val));
-//
-// events
-//   .getAveragePerUserByMonth({ previous: 48 })
-//   .then((val) => console.log(val));
-//
-// events
-//   .getAveragePerUserByHour({
-//     previous: 48,
-//     event_name: "Purchase",
-//   })
-//   .then((val) => console.log(val));
-//
-// users
-//   .getTotalByMonth({ previous: 1, event_name: "Login" })
-//   .then((val) => console.log(val));
