@@ -1,343 +1,87 @@
 "use strict";
 
 const dbQuery = require("../utils/db-query");
-const eventsSQL = require("../sql/events.js");
-const usersSQL = require("../sql/users.js");
+const events = require("../sql/events");
+const users = require("../sql/users");
+const { VALID_TIME_UNIT } = require("../lib/globals");
+const formatDataBy = require("../utils/format-records");
 
-const events = {
-  async listAll() {
-    const result = await dbQuery(eventsSQL.listAll);
-    return result.rows;
+const AGGREGATE_EVENTS = {
+  total: events.getTotalEventsBy,
+  average: events.getAveragePerUserBy,
+  median: events.getMedianPerUserBy,
+  minimum: events.getMinPerUserBy,
+  maximum: events.getMaxPerUserBy,
+};
+
+const AGGREGATE_USERS = {
+  total: users.getTotalUsersBy,
+};
+
+const ADJUST_DATE = {
+  hour: (offset, currDate) => {
+    currDate.setHours(currDate.getHours() - offset);
+    return currDate;
   },
-  async getTotalByHour({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.totalByHour,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
+  day: (offset, currDate) => {
+    currDate.setDate(currDate.getDate() - offset);
+    return currDate;
   },
-
-  async getTotalByDay({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.totalByDay,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getTotalByMonth({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.totalByMonth,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getAveragePerUserByHour({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.averagePerUserByHour,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getAveragePerUserByDay({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.averagePerUserByDay,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getAveragePerUserByMonth({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.averagePerUserByMonth,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMinPerUserByHour({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.minPerUserByHour,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMinPerUserByDay({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.minPerUserByDay,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMinPerUserByMonth({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.minPerUserByMonth,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMaxPerUserByHour({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.minPerUserByHour,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMaxPerUserByDay({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.maxPerUserByDay,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMaxPerUserByMonth({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.maxPerUserByMonth,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows[-1].max_event_count_per_user;
-  },
-
-  async getMedianPerUserByHour({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
-
-    const result = await dbQuery(
-      events.getMedianPerUserByHour,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMedianPerUserByDay({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.medianPerUserByDay,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
-  },
-
-  async getMedianPerUserByMonth({ previous, event_name }) {
-    let dateRangeStart;
-
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
-
-    const result = await dbQuery(
-      eventsSQL.medianPerUserByMonth,
-      dateRangeStart,
-      event_name,
-    );
-
-    return result.rows;
+  month: (offset, currDate) => {
+    currDate.setMonth(currDate.getMonth() - offset);
+    return currDate;
   },
 };
 
-const users = {
-  async getTotalByHour({ previous, event_name }) {
-    let dateRangeStart;
+async function getAggregatedUsersBy(timeUnit, aggregationType, data) {
+  if (!AGGREGATE_USERS[aggregationType]) return "Invalid aggregation provided";
+  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setHours(dateRangeStart.getHours() - previous);
-    }
+  const { previous } = data;
+  let dateRangeStart;
 
-    const result = await dbQuery(
-      usersSQL.totalByHour,
-      dateRangeStart,
-      event_name,
-    );
+  if (previous) {
+    dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
+  }
 
-    return result.rows;
-  },
+  const { event_name, filterAttribute, filterAttributeValue } = data;
 
-  async getTotalByDay({ previous, event_name }) {
-    let dateRangeStart;
+  const result = await dbQuery(
+    AGGREGATE_USERS[aggregationType](timeUnit),
+    dateRangeStart,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  );
 
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setDate(dateRangeStart.getDate() - previous);
-    }
+  return formatDataBy(timeUnit, result.rows, previous);
+}
 
-    const result = await dbQuery(
-      usersSQL.totalByDay,
-      dateRangeStart,
-      event_name,
-    );
+async function getAggregatedEventsBy(timeUnit, aggregationType, data) {
+  if (!AGGREGATE_EVENTS[aggregationType]) return "Invalid aggregation provided";
+  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
-    return result.rows;
-  },
+  const { previous } = data;
+  let dateRangeStart;
 
-  async getTotalByMonth({ previous, event_name }) {
-    let dateRangeStart;
+  if (previous) {
+    dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
+  }
 
-    if (previous) {
-      dateRangeStart = new Date();
-      dateRangeStart.setMonth(dateRangeStart.getMonth() - previous);
-    }
+  const { event_name, filterAttribute, filterAttributeValue } = data;
 
-    const result = await dbQuery(
-      usersSQL.totalByMonth,
-      dateRangeStart,
-      event_name,
-    );
+  const result = await dbQuery(
+    AGGREGATE_EVENTS[aggregationType](timeUnit),
+    dateRangeStart,
+    event_name,
+    filterAttribute,
+    filterAttributeValue,
+  );
 
-    return result.rows;
-  },
-};
+  return formatDataBy(timeUnit, result.rows, previous);
+}
 
 module.exports = {
-  events,
-  users,
+  getAggregatedEventsBy,
+  getAggregatedUsersBy,
 };
-
-// events.listAll().then((val) => console.log(val));
-// events.getTotalByDay({ previous: 30 }).then((val) => console.log(val));
-
-// events
-//   .getTotalByMonth({ previous: 1, event_name: "Login" })
-//   .then((val) => console.log(val));
-//
-// events.getMaxPerUserByDay({ previous: 30 }).then((val) => console.log(val));
-//
-// events
-//   .getAveragePerUserByMonth({ previous: 48 })
-//   .then((val) => console.log(val));
-// //
-// users.getTotalByDay({ previous: 1 }).then((val) => console.log(val));
-//
-// users
-//   .getTotalByMonth({ previous: 1, event_name: "Login" })
-//   .then((val) => console.log(val));
