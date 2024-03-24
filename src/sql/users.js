@@ -1,8 +1,12 @@
-module.exports = {
-  totalByHour: `
+const { VALID_TIME_UNIT } = require("../lib/globals.js");
+
+function getTotalUsersBy(timeUnit) {
+  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+
+  return `
     SELECT
-       DATE_TRUNC('hour', event_created) AS event_hour,
-       COUNT(DISTINCT user_id) AS user_count
+      DATE_TRUNC('${VALID_TIME_UNIT[timeUnit]}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
+      COUNT(DISTINCT user_id) AS calculated_value
     FROM
       events
     WHERE
@@ -10,34 +14,10 @@ module.exports = {
       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
-      event_hour
-  `,
+      ${timeUnit}
+  `;
+}
 
-  totalByDay: `
-    SELECT
-      DATE_TRUNC('day', event_created) AS event_day,
-      COUNT(DISTINCT user_id) AS user_count
-    FROM
-      events
-    WHERE
-      (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-      AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
-      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-    GROUP BY
-      event_day
-  `,
-
-  totalByMonth: `
-    SELECT
-      DATE_TRUNC('month', event_created) AS event_month,
-      COUNT(DISTINCT user_id) AS user_count
-    FROM
-      events
-    WHERE
-      (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-      AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
-      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-    GROUP BY
-      event_month
-  `,
+module.exports = {
+  getTotalUsersBy,
 };

@@ -1,15 +1,11 @@
-module.exports = {
-  listAll: `
-    SELECT DISTINCT event_name FROM events;
-  `,
+const { VALID_TIME_UNIT } = require("../lib/globals");
 
-  listAllAttributes: `
-    SELECT DISTINCT event_attributes from events;
-  `,
+function getTotalEventsBy(timeUnit) {
+  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
-  totalByHour: `
+  return `
     SELECT
-      DATE_TRUNC('hour', event_created) AS event_hour,
+      DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
       COUNT(DISTINCT event_id) AS calculated_value
     FROM
       events
@@ -18,265 +14,104 @@ module.exports = {
       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
-      event_hour;
-  `,
+      ${timeUnit}
+  `;
+}
 
-  totalByDay: `
-    SELECT
-      DATE_TRUNC('day', event_created) AS event_day,
-      COUNT(DISTINCT event_id) AS calculated_value
-    FROM
-      events
-    WHERE
-      (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-      AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
-      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-    GROUP BY
-      event_day;
+function getAveragePerUserBy(timeUnit) {
+  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
-  `,
-
-  totalByMonth: `
-    SELECT
-      DATE_TRUNC('month', event_created) AS event_month,
-      COUNT(DISTINCT event_id) AS calculated_value
-    FROM
-      events
-    WHERE
-      (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-      AND CAST($2 AS VARCHAR) IS NULL OR event_name = $2
-      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-    GROUP BY
-      event_month;
-
-  `,
-
-  averagePerUserByHour: `
-    WITH events_per_user_per_hour AS (
+  return `
+    WITH events_per_user_per_${timeUnit} AS (
         SELECT
-            DATE_TRUNC('hour', event_created) AS event_hour,
-            COUNT(DISTINCT event_id) AS calculated_value,
+            DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
+            COUNT(DISTINCT e.event_id) AS calculated_value,
             COUNT(DISTINCT u.user_id) AS user_count
         FROM
             events e
         LEFT JOIN
-            users u ON u.user_created < e.event_created
+            users u ON u.user_created <= e.event_created
         WHERE
             (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
             AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
             AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
         GROUP BY
-            DATE_TRUNC('hour', e.event_created)
+            DATE_TRUNC('${timeUnit}', e.event_created)
     )
     SELECT
-        event_hour,
+        ${timeUnit},
         CAST(SUM(calculated_value) AS FLOAT) / NULLIF(SUM(user_count), 0) AS calculated_value
     FROM
-        events_per_user_per_hour
+        events_per_user_per_${timeUnit}
     GROUP BY
-        event_hour;
-  `,
+        ${timeUnit}
+  `;
+}
 
-  averagePerUserByDay: `
-    WITH events_per_user_per_day AS (
-      SELECT
-          DATE_TRUNC('day', e.event_created) AS event_day,
-          COUNT(DISTINCT e.event_id) AS calculated_value,
-          COUNT(DISTINCT u.user_id) AS user_count
-      FROM
-          events e
-      LEFT JOIN
-          users u ON u.user_created < e.event_created
-      WHERE
-          (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
-          AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-          AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
-      GROUP BY
-          DATE_TRUNC('day', e.event_created)
-    )
+function getMinPerUserBy(timeUnit) {
+  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
+  return `
+    WITH events_per_user_per_${timeUnit} AS (
     SELECT
-     event_day,
-     CAST(SUM(calculated_value) AS FLOAT) / NULLIF(SUM(user_count), 0) AS calculated_value
+      DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
+      COUNT(DISTINCT event_id) AS calculated_value,
+      user_id
     FROM
-     events_per_user_per_day
+      events
+    WHERE
+      (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+      AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
+      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
-     event_day; 
-`,
+      ${timeUnit}, user_id
+  )
+  SELECT
+    ${timeUnit},
+    MIN(calculated_value) AS calculated_value
+  FROM
+    events_per_user_per_${timeUnit}
+  GROUP BY
+    ${timeUnit}
+  `;
+}
 
-  averagePerUserByMonth: `
-    WITH events_per_user_per_month AS (
-        SELECT
-            DATE_TRUNC('month', event_created) AS event_month,
-            COUNT(DISTINCT event_id) AS calculated_value,
-            COUNT(DISTINCT u.user_id) AS user_count
-        FROM
-            events e
-        LEFT JOIN
-            users u ON u.user_created < e.event_created
-        WHERE
-            (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
-            AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-            AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
-        GROUP BY
-            DATE_TRUNC('month', e.event_created)
-    )
+function getMaxPerUserBy(timeUnit) {
+  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+
+  return `
+    WITH events_per_user_per_${timeUnit} AS (
     SELECT
-        event_month,
-        CAST(SUM(calculated_value) AS FLOAT) / NULLIF(SUM(user_count), 0) AS calculated_value
+      DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
+      COUNT(DISTINCT event_id) AS calculated_value,
+      user_id
     FROM
-        events_per_user_per_month
+      events
+    WHERE
+      (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
+      AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
+      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
     GROUP BY
-        event_month;
-`,
+      ${timeUnit}, user_id
+  )
+  SELECT
+    ${timeUnit},
+    MAX(calculated_value) AS calculated_value
+  FROM
+    events_per_user_per_${timeUnit}
+  GROUP BY
+    ${timeUnit}
+  `;
+}
 
-  minPerUserByHour: `
-    WITH events_per_user_per_hour AS (
-     SELECT
-       DATE_TRUNC('hour', event_created) AS event_hour,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_hour, user_id
-   )
-   SELECT
-     event_hour,
-     MIN(calculated_value) AS calculated_value
-   FROM
-     events_per_user_per_hour
-   GROUP BY
-     event_hour
-  `,
+function getMedianPerUserBy(timeUnit) {
+  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
-  minPerUserByDay: `
-    WITH events_per_user_per_day AS (
-     SELECT
-       DATE_TRUNC('hour', event_created) AS event_day,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_day, user_id
-    )
-    SELECT
-     event_day,
-     MIN(calculated_value) AS calculated_value
-    FROM
-     events_per_user_per_day
-    GROUP BY
-     event_day;
-  `,
-
-  minPerUserByMonth: `
-    WITH events_per_user_per_month AS (
-     SELECT
-       DATE_TRUNC('month', event_created) AS event_month,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_month, user_id
-    )
-    SELECT
-     event_month,
-     MIN(calculated_value) AS calculated_value
-    FROM
-     events_per_user_per_month
-    GROUP BY
-     event_month;
-  `,
-
-  maxPerUserByHour: `
-    WITH events_per_user_per_hour AS (
-     SELECT
-       DATE_TRUNC('hour', event_created) AS event_hour,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_hour, user_id
-    )
-    SELECT
-     event_hour,
-     MAX(calculated_value) AS calculated_value
-    FROM
-     events_per_user_per_hour
-    GROUP BY
-     event_hour;
-  `,
-
-  maxPerUserByDay: `
-    WITH events_per_user_per_day AS (
-     SELECT
-       DATE_TRUNC('day', event_created) AS event_day,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_day, user_id
-    )
-    SELECT
-     event_day,
-     MAX(calculated_value) AS calculated_value
-    FROM
-     events_per_user_per_day
-    GROUP BY
-     event_day;  `,
-
-  maxPerUserByMonth: `
-    WITH events_per_user_per_month AS (
-     SELECT
-       DATE_TRUNC('month', event_created) AS event_month,
-       COUNT(DISTINCT event_id) AS calculated_value,
-       user_id
-     FROM
-       events
-     WHERE
-       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
-       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-       AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
-     GROUP BY
-       event_month, user_id
-    )
-    SELECT
-     event_month,
-     MAX(calculated_value) AS calculated_value
-    FROM
-     events_per_user_per_month
-    GROUP BY
-     event_month;  `,
-
-  medianPerUserByHour: `
+  return `
     WITH event_counts AS (
       SELECT
         user_id,
-        DATE_TRUNC('hour', event_created) AS event_hour,
+        DATE_TRUNC('hour', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
         COUNT(DISTINCT e.event_id) as num_events
       FROM events e
       WHERE
@@ -285,13 +120,13 @@ module.exports = {
         AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
       GROUP BY 
         user_id,
-        DATE_TRUNC('hour', event_created)
+        DATE_TRUNC('hour', CAST(event_created AS TIMESTAMPTZ))
     ), 
     user_event_counts AS (
       SELECT
         u.user_id,
         u.user_created,
-        COALESCE(ec.event_hour, (SELECT event_hour FROM event_counts WHERE event_hour IS NOT NULL LIMIT 1)) AS event_hour,
+        COALESCE(ec.${timeUnit}, (SELECT ${timeUnit} FROM event_counts WHERE ${timeUnit} IS NOT NULL LIMIT 1)) AS ${timeUnit},
         CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
       FROM
         users u
@@ -299,82 +134,20 @@ module.exports = {
         u.user_id = ec.user_id
     )
     SELECT
-      event_hour,
+      ${timeUnit},
       CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
     FROM
       user_event_counts
-    WHERE user_created < event_hour
+    WHERE user_created <= ${timeUnit}
     GROUP BY
-      event_hour;`,
+    ${timeUnit}
+  `;
+}
 
-  medianPerUserByDay: `
-    WITH event_counts AS (
-      SELECT
-        user_id,
-        DATE_TRUNC('day', event_created) AS event_day,
-        COUNT(DISTINCT e.event_id) as num_events
-      FROM events e
-      WHERE
-        (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
-        AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-        AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
-      GROUP BY 
-        user_id,
-        DATE_TRUNC('day', event_created)
-    ), 
-    user_event_counts AS (
-      SELECT
-        u.user_id,
-        u.user_created,
-        COALESCE(ec.event_day, (SELECT event_day FROM event_counts WHERE event_day IS NOT NULL LIMIT 1)) AS event_day,
-        CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
-      FROM
-        users u
-      LEFT JOIN event_counts ec ON
-        u.user_id = ec.user_id
-    )
-    SELECT
-      event_day,
-      CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
-    FROM
-      user_event_counts
-    WHERE user_created < event_day
-    GROUP BY
-      event_day; `,
-
-  medianPerUserByMonth: `
-    WITH event_counts AS (
-      SELECT
-        user_id,
-        DATE_TRUNC('month', event_created) AS event_month,
-        COUNT(DISTINCT e.event_id) as num_events
-      FROM events e
-      WHERE
-        (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
-        AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-        AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
-      GROUP BY 
-        user_id,
-        DATE_TRUNC('month', event_created)
-    ), 
-    user_event_counts AS (
-      SELECT
-        u.user_id,
-        u.user_created,
-        COALESCE(ec.event_month, (SELECT event_month FROM event_counts WHERE event_month IS NOT NULL LIMIT 1)) AS event_month,
-        CAST(COALESCE(ec.num_events, 0) AS INT) AS num_events
-      FROM
-        users u
-      LEFT JOIN event_counts ec ON
-        u.user_id = ec.user_id
-    )
-    SELECT
-      event_month,
-      CAST(MEDIAN(num_events) AS FLOAT) AS calculated_value
-    FROM
-      user_event_counts
-    WHERE user_created < event_month
-    GROUP BY
-      event_month;
-  `,
+module.exports = {
+  getTotalEventsBy,
+  getAveragePerUserBy,
+  getMaxPerUserBy,
+  getMinPerUserBy,
+  getMedianPerUserBy,
 };

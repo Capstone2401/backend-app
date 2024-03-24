@@ -25,8 +25,4 @@ const dbQuery = async (statement, ...parameters) => {
   }
 };
 
-// dbQuery("SELECT * FROM events").then((result) =>
-//   console.log(JSON.stringify(result.rows[0])),
-// );
-//
 module.exports = dbQuery;
