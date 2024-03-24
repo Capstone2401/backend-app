@@ -54,7 +54,6 @@ async function getAggregatedUsersBy(timeUnit, aggregationType, data) {
     filterAttributeValue,
   );
 
-  console.log(result.rows);
   return formatDataBy(timeUnit, result.rows, previous);
 }
 
