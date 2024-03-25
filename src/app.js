@@ -13,13 +13,6 @@ const port = config.PORT || 3000;
 
 app.use(morgan("common"));
 
-app.get("/", (_req, res) => res.send("hello world"));
-
-app.get("/test", async (_req, res) => {
-  const result = await redshift.events.listAll();
-  res.status(200).send(JSON.stringify(result));
-});
-
 app.get("/data", (_req, _res, next) => {
   try {
     // STUB
