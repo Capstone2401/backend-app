@@ -36,14 +36,13 @@ app.get("/events", (req, res, next) => {
   };
 
   const PREVIOUS_BY_RANGE = {
-    // What format does getAggregatedEventsBy require?
-    Today: "hour",
-    Yesterday: "hour",
-    Last7D: "day",
-    Last30D: "day",
-    Last3M: "month",
-    Last6M: "month",
-    Last12M: "month",
+    Today: 24,
+    Yesterday: 48,
+    Last7D: 7,
+    Last30D: 30,
+    Last3M: 3,
+    Last6M: 6,
+    Last12M: 12,
   };
 
   let { date_range, event_name } = req.query;
