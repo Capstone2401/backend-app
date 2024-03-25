@@ -24,9 +24,40 @@ app.get("/allEventNames", (_req, res, next) => {
   }
 });
 
-app.get("/data", (_req, _res, next) => {
+app.get("/events", (req, res, next) => {
+  const TIMEUNIT_BY_RANGE = {
+    Today: "hour",
+    Yesterday: "hour",
+    Last7D: "day",
+    Last30D: "day",
+    Last3M: "month",
+    Last6M: "month",
+    Last12M: "month",
+  };
+
+  const PREVIOUS_BY_RANGE = {
+    // What format does getAggregatedEventsBy require?
+    Today: "hour",
+    Yesterday: "hour",
+    Last7D: "day",
+    Last30D: "day",
+    Last3M: "month",
+    Last6M: "month",
+    Last12M: "month",
+  };
+
+  let { date_range, event_name } = req.query;
   try {
-    // STUB
+    let result = redshift.getAggregatedEventsBy(
+      TIMEUNIT_BY_RANGE[date_range],
+      "total", // TODO implement other Aggregation Types
+      {
+        previous: PREVIOUS_BY_RANGE[date_range],
+        event_name,
+      },
+    );
+
+    res.status(200).send(JSON.stringify(result));
   } catch (error) {
     next(error);
   }
