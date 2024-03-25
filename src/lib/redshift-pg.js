@@ -81,7 +81,20 @@ async function getAggregatedEventsBy(timeUnit, aggregationType, data) {
   return formatDataBy(timeUnit, result.rows, previous);
 }
 
+async function getAllEventNames() {
+  let result;
+
+  try {
+    result = await dbQuery();
+  } catch (error) {
+    console.error(error);
+  }
+
+  return result.rows;
+}
+
 module.exports = {
+  getAllEventNames,
   getAggregatedEventsBy,
   getAggregatedUsersBy,
 };

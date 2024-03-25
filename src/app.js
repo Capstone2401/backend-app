@@ -15,9 +15,13 @@ app.use(morgan("common"));
 
 app.get("/", (_req, res) => res.send("hello world"));
 
-app.get("/test", async (_req, res) => {
-  const result = await redshift.events.listAll();
-  res.status(200).send(JSON.stringify(result));
+app.get("/allEventNames", (_req, res, next) => {
+  try {
+    const result = redshift.getAllEventNames();
+    res.status(200).send(JSON.stringify(result));
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get("/data", (_req, _res, next) => {
@@ -31,7 +35,7 @@ app.get("/data", (_req, _res, next) => {
 // Error handler
 app.use((err, _req, res, _next) => {
   console.error(err); // Writes more extensive information to the console log
-  res.status(404).send(err.message); // Tranform to more granular error messages for 4XX and 5XX
+  res.status(404).send(err.message); // TODO; Tranform to more granular error messages for 4XX and 5XX
 });
 
 // Listener
