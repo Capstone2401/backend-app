@@ -28,21 +28,21 @@ app.get("/events", (req, res, next) => {
   const TIMEUNIT_BY_RANGE = {
     Today: "hour",
     Yesterday: "hour",
-    Last7D: "day",
-    Last30D: "day",
-    Last3M: "month",
-    Last6M: "month",
-    Last12M: "month",
+    "7D": "day",
+    "30D": "day",
+    "3M": "month",
+    "6M": "month",
+    "12M": "month",
   };
 
   const PREVIOUS_BY_RANGE = {
     Today: 24,
     Yesterday: 48,
-    Last7D: 7,
-    Last30D: 30,
-    Last3M: 3,
-    Last6M: 6,
-    Last12M: 12,
+    "7D": 7,
+    "30D": 30,
+    "3M": 3,
+    "6M": 6,
+    "12M": 12,
   };
 
   let { date_range, event_name } = req.query;
@@ -60,15 +60,14 @@ app.get("/events", (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
 
-// Error handler
-app.use((err, _req, res, _next) => {
-  console.error(err); // Writes more extensive information to the console log
-  res.status(404).send(err.message); // TODO; Tranform to more granular error messages for 4XX and 5XX
-});
+  // Error handler
+  app.use((err, _req, res, _next) => {
+    console.error(err); // Writes more extensive information to the console log
+    res.status(404).send(err.message); // TODO; Tranform to more granular error messages for 4XX and 5XX
+  });
 
-// Listener
-app.listen(port, "0.0.0.0", () => {
-  console.log(`App is listening on port ${port} of ${host}.`);
-});
+  // Listener
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`App is listening on port ${port} of ${host}.`);
+  });

@@ -45,7 +45,7 @@ function getAveragePerUserBy(timeUnit) {
             AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
             AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
         GROUP BY
-            DATE_TRUNC('${timeUnit}', e.event_created)
+            ${timeUnit}
     )
     SELECT
         ${timeUnit},
