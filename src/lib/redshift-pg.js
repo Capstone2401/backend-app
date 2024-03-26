@@ -82,10 +82,9 @@ async function getAggregatedEventsBy(timeUnit, aggregationType, data) {
 }
 
 async function getAllEventNames() {
-  let result;
-
   try {
-    result = await dbQuery();
+    let result = await dbQuery(events.getAllEventNames());
+    return result.rows;
   } catch (error) {
     console.error(error);
   }
