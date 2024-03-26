@@ -1,5 +1,14 @@
 const { VALID_TIME_UNIT } = require("../lib/globals");
 
+function getAllEventNames() {
+  return `
+    SELECT
+      DISTINCT event_name
+    FROM
+      events
+  `;
+}
+
 function getTotalEventsBy(timeUnit) {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
@@ -118,10 +127,10 @@ function getMedianPerUserBy(timeUnit) {
         (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
         AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
         AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
-      GROUP BY 
+      GROUP BY
         user_id,
         DATE_TRUNC('hour', CAST(event_created AS TIMESTAMPTZ))
-    ), 
+    ),
     user_event_counts AS (
       SELECT
         u.user_id,
