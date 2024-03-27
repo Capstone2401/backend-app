@@ -7,7 +7,7 @@ function getAllUserAttributes() {
       JSON_SERIALIZE(user_attributes)
     FROM
       users
-  `
+  `;
 }
 
 function getTotalUsersBy(timeUnit) {
@@ -16,7 +16,7 @@ function getTotalUsersBy(timeUnit) {
   return `
     SELECT
       DATE_TRUNC('${VALID_TIME_UNIT[timeUnit]}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
-      COUNT(DISTINCT events.user_id) AS calculated_value
+      COUNT(DISTINCT e.user_id) AS calculated_value
     FROM
       events e
     JOIN users u ON e.user_id = u.user_id
