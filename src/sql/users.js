@@ -1,5 +1,15 @@
 const { VALID_TIME_UNIT } = require("../lib/globals.js");
 
+function getAllUserAttributes() {
+  return `
+  SELECT 
+    DISTINCT
+      JSON_SERIALIZE(user_attributes)
+    FROM
+      users
+  `
+}
+
 function getTotalUsersBy(timeUnit) {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
@@ -20,4 +30,5 @@ function getTotalUsersBy(timeUnit) {
 
 module.exports = {
   getTotalUsersBy,
+  getAllUserAttributes,
 };
