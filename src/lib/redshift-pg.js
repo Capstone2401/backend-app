@@ -45,14 +45,16 @@ async function getAggregatedUsersBy(timeUnit, aggregationType, options) {
     dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
   }
 
-  const { eventName, filterAttribute, filterAttributeValue } = options;
+
+  const { eventName, filters } = options;
+
 
   const result = await dbQuery(
     AGGREGATE_USERS[aggregationType](timeUnit),
     dateRangeStart,
     eventName,
-    filterAttribute,
-    filterAttributeValue,
+    filters ? filters.events : {},
+    filters ? filters.users : {},
   );
 
   return formatDataBy(timeUnit, result.rows, previous);
@@ -69,14 +71,15 @@ async function getAggregatedEventsBy(timeUnit, aggregationType, options) {
     dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
   }
 
-  const { eventName, filterAttribute, filterAttributeValue } = options;
+
+  const { eventName, filters } = options;
 
   const result = await dbQuery(
     AGGREGATE_EVENTS[aggregationType](timeUnit),
     dateRangeStart,
     eventName,
-    filterAttribute,
-    filterAttributeValue,
+    filters ? filters.events : {},
+    filters ? filters.users : {},
   );
 
   return formatDataBy(timeUnit, result.rows, previous);
