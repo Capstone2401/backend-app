@@ -9,6 +9,16 @@ function getAllEventNames() {
   `;
 }
 
+function getAllEventAttributes() {
+  return `
+  SELECT 
+    DISTINCT
+      JSON_SERIALIZE(event_attributes)
+    FROM
+      events
+  `
+}
+
 function getTotalEventsBy(timeUnit) {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
@@ -160,4 +170,5 @@ module.exports = {
   getMaxPerUserBy,
   getMinPerUserBy,
   getMedianPerUserBy,
+  getAllEventAttributes,
 };

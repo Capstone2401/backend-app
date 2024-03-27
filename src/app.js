@@ -65,13 +65,22 @@ app.get("/events", (req, res, next) => {
   }
 });
 
+app.get("/attributes", async (_req, res, next) => {
+  try {
+    const result = await redshift.getAllAttributes();
+    res.status(200).send(JSON.stringify(result));
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Error handler
 app.use((err, _req, res, _next) => {
   console.error(err); // Writes more extensive information to the console log
   res.status(404).send(err.message); // TODO; Tranform to more granular error messages for 4XX and 5XX
 });
 
-// Listener
-app.listen(port, host, () => {
+ // Listener
+app.listen(port, "0.0.0.0", () => {
   console.log(`App is listening on port ${port} of ${host}.`);
 });
