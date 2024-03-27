@@ -154,6 +154,7 @@ function getMedianPerUserBy(timeUnit) {
 }
 
 module.exports = {
+  getAllEventNames,
   getTotalEventsBy,
   getAveragePerUserBy,
   getMaxPerUserBy,

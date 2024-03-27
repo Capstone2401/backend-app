@@ -33,18 +33,18 @@ const ADJUST_DATE = {
   },
 };
 
-async function getAggregatedUsersBy(timeUnit, aggregationType, data) {
+async function getAggregatedUsersBy(timeUnit, aggregationType, options) {
   if (!AGGREGATE_USERS[aggregationType]) return "Invalid aggregation provided";
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
-  const { previous } = data;
+  const { previous } = options;
   let dateRangeStart;
 
   if (previous) {
     dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
   }
 
-  const { event_name, filterAttribute, filterAttributeValue } = data;
+  const { event_name, filterAttribute, filterAttributeValue } = options;
 
   const result = await dbQuery(
     AGGREGATE_USERS[aggregationType](timeUnit),
@@ -57,18 +57,18 @@ async function getAggregatedUsersBy(timeUnit, aggregationType, data) {
   return formatDataBy(timeUnit, result.rows, previous);
 }
 
-async function getAggregatedEventsBy(timeUnit, aggregationType, data) {
+async function getAggregatedEventsBy(timeUnit, aggregationType, options) {
   if (!AGGREGATE_EVENTS[aggregationType]) return "Invalid aggregation provided";
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
-  const { previous } = data;
+  const { previous } = options;
   let dateRangeStart;
 
   if (previous) {
     dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
   }
 
-  const { event_name, filterAttribute, filterAttributeValue } = data;
+  const { event_name, filterAttribute, filterAttributeValue } = options;
 
   const result = await dbQuery(
     AGGREGATE_EVENTS[aggregationType](timeUnit),
@@ -82,12 +82,15 @@ async function getAggregatedEventsBy(timeUnit, aggregationType, data) {
 }
 
 async function getAllEventNames() {
+  let result;
+
   try {
-    let result = await dbQuery(events.getAllEventNames());
-    return result.rows; // ["signup", "login"]
+    result = await dbQuery(events.getAllEventNames());
   } catch (error) {
     console.error(error);
   }
+
+  return result.rows;
 }
 
 module.exports = {
