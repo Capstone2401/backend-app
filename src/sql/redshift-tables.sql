@@ -7,7 +7,6 @@ CREATE TABLE public.users (
 
 CREATE TABLE public.events (   
     id                INTEGER IDENTITY(1,1) PRIMARY KEY,
-    event_id          VARCHAR(50) NOT NULL,
     event_name        VARCHAR(255),
     user_id           VARCHAR(50) REFERENCES Users(id),
     event_attributes  SUPER, -- Use SUPER data type for JSON
