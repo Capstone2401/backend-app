@@ -15,9 +15,11 @@ app.use(morgan("common"));
 
 app.get("/", (_req, res) => res.send("hello world"));
 
-app.get("/allEventNames", (_req, res, next) => {
+app.get("/allEventNames", async (_req, res, next) => {
   try {
-    const result = redshift.getAllEventNames();
+    let result = await redshift.getAllEventNames();
+    result = result.map((entry) => entry.event_name);
+    res.set("Access-Control-Allow-Origin", "*");
     res.status(200).send(JSON.stringify(result));
   } catch (error) {
     next(error);
@@ -45,22 +47,23 @@ app.get("/events", (req, res, next) => {
     "12M": 12,
   };
 
-  let { date_range, event_name } = req.query;
+  let { dateRange, eventName, aggregationType } = req.query;
   try {
     let result = redshift.getAggregatedEventsBy(
-      TIMEUNIT_BY_RANGE[date_range],
-      "total", // TODO implement other Aggregation Types
+      TIMEUNIT_BY_RANGE[dateRange],
+      aggregationType,
       {
-        previous: PREVIOUS_BY_RANGE[date_range],
-        event_name,
+        previous: PREVIOUS_BY_RANGE[dateRange],
+        eventName,
       },
     );
 
+    res.set("Access-Control-Allow-Origin", "*");
     res.status(200).send(JSON.stringify(result));
   } catch (error) {
     next(error);
   }
-
+});
 
 app.get("/attributes", async (_req, res, next) => {
   try {
