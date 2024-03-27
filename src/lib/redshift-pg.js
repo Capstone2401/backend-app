@@ -5,6 +5,7 @@ const events = require("../sql/events");
 const users = require("../sql/users");
 const { VALID_TIME_UNIT } = require("../lib/globals");
 const formatDataBy = require("../utils/format-records");
+const formatAttributes = require('../utils/format-attributes')
 
 const AGGREGATE_EVENTS = {
   total: events.getTotalEventsBy,
@@ -92,8 +93,23 @@ async function getAllEventNames() {
   return result.rows;
 }
 
+async function getAllAttributes() {
+  let result;
+
+  try {
+    let eventAttributes = dbQuery(events.getAllEventAttributes());
+    let userAttributes = dbQuery(users.getAllUserAttributes());
+    result = await Promise.all([eventAttributes, userAttributes]);
+    let formattedResult = formatAttributes(result);
+    return formattedResult
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 module.exports = {
   getAllEventNames,
   getAggregatedEventsBy,
   getAggregatedUsersBy,
+  getAllAttributes,
 };
