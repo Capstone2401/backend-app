@@ -74,13 +74,52 @@ app.get("/attributes", async (_req, res, next) => {
   }
 });
 
+app.get("/users", (req, res, next) => {
+  const TIMEUNIT_BY_RANGE = {
+    Today: "hour",
+    Yesterday: "hour",
+    "7D": "day",
+    "30D": "day",
+    "3M": "month",
+    "6M": "month",
+    "12M": "month",
+  };
+
+  const PREVIOUS_BY_RANGE = {
+    Today: 24,
+    Yesterday: 48,
+    "7D": 7,
+    "30D": 30,
+    "3M": 3,
+    "6M": 6,
+    "12M": 12,
+  };
+
+  let { dateRange, eventName, aggregationType } = req.query;
+  try {
+    let result = redshift.getAggregatedUsersBy(
+      TIMEUNIT_BY_RANGE[dateRange],
+      aggregationType,
+      {
+        previous: PREVIOUS_BY_RANGE[dateRange],
+        eventName,
+      },
+    );
+
+    res.set("Access-Control-Allow-Origin", "*");
+    res.status(200).send(JSON.stringify(result));
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Error handler
 app.use((err, _req, res, _next) => {
   console.error(err); // Writes more extensive information to the console log
   res.status(404).send(err.message); // TODO; Tranform to more granular error messages for 4XX and 5XX
 });
 
- // Listener
+// Listener
 app.listen(port, "0.0.0.0", () => {
   console.log(`App is listening on port ${port} of ${host}.`);
 });
