@@ -47,14 +47,14 @@ app.get("/events", (req, res, next) => {
     "12M": 12,
   };
 
-  let { date_range, event_name, aggregation_type } = req.query; // TODO Switch to Camel Case
+  let { dateRange, eventName, aggregationType } = req.query;
   try {
     let result = redshift.getAggregatedEventsBy(
-      TIMEUNIT_BY_RANGE[date_range],
-      aggregation_type,
+      TIMEUNIT_BY_RANGE[dateRange],
+      aggregationType,
       {
-        previous: PREVIOUS_BY_RANGE[date_range],
-        event_name,
+        previous: PREVIOUS_BY_RANGE[dateRange],
+        eventName,
       },
     );
 
