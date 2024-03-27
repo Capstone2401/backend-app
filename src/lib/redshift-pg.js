@@ -84,12 +84,10 @@ async function getAggregatedEventsBy(timeUnit, aggregationType, data) {
 async function getAllEventNames() {
   try {
     let result = await dbQuery(events.getAllEventNames());
-    return result.rows;
+    return result.rows; // ["signup", "login"]
   } catch (error) {
     console.error(error);
   }
-
-  return result.rows;
 }
 
 module.exports = {

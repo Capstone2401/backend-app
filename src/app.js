@@ -15,9 +15,10 @@ app.use(morgan("common"));
 
 app.get("/", (_req, res) => res.send("hello world"));
 
-app.get("/allEventNames", (_req, res, next) => {
+app.get("/allEventNames", async (_req, res, next) => {
   try {
-    const result = redshift.getAllEventNames();
+    const result = await redshift.getAllEventNames();
+    result = result.map(entry => entry.event_name);
     res.status(200).send(JSON.stringify(result));
   } catch (error) {
     next(error);
