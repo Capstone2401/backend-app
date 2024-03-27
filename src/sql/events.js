@@ -6,13 +6,16 @@ function getTotalEventsBy(timeUnit) {
   return `
     SELECT
       DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
-      COUNT(DISTINCT event_id) AS calculated_value
+      COUNT(DISTINCT e.id) AS calculated_value
     FROM
-      events
+      events e
+    LEFT JOIN
+      users u ON u.user_id = e.user_id
     WHERE
       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
+      AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
+      AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
     GROUP BY
       ${timeUnit}
   `;
@@ -25,7 +28,7 @@ function getAveragePerUserBy(timeUnit) {
     WITH events_per_user_per_${timeUnit} AS (
         SELECT
             DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
-            COUNT(DISTINCT e.event_id) AS calculated_value,
+            COUNT(DISTINCT e.id) AS calculated_value,
             COUNT(DISTINCT u.user_id) AS user_count
         FROM
             events e
@@ -34,7 +37,8 @@ function getAveragePerUserBy(timeUnit) {
         WHERE
             (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
             AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-            AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
+            AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
+            AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
         GROUP BY
             ${timeUnit}
     )
@@ -55,14 +59,17 @@ function getMinPerUserBy(timeUnit) {
     WITH events_per_user_per_${timeUnit} AS (
     SELECT
       DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
-      COUNT(DISTINCT event_id) AS calculated_value,
+      COUNT(DISTINCT e.id) AS calculated_value,
       user_id
     FROM
-      events
+      events e
+    LEFT JOIN
+      users u ON u.user_id = e.user_id
     WHERE
       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
+      AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
+      AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
     GROUP BY
       ${timeUnit}, user_id
   )
@@ -83,14 +90,17 @@ function getMaxPerUserBy(timeUnit) {
     WITH events_per_user_per_${timeUnit} AS (
     SELECT
       DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
-      COUNT(DISTINCT event_id) AS calculated_value,
+      COUNT(DISTINCT e.id) AS calculated_value,
       user_id
     FROM
-      events
+      events e
+    LEFT JOIN
+      users u ON u.user_id = e.user_id
     WHERE
       (CAST($1 AS TIMESTAMP) IS NULL OR event_created BETWEEN $1 AND SYSDATE)
       AND (CAST($2 AS VARCHAR) IS NULL OR event_name = $2)
-      AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(event_attributes), $3) = $4)
+      AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
+      AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
     GROUP BY
       ${timeUnit}, user_id
   )
@@ -112,12 +122,15 @@ function getMedianPerUserBy(timeUnit) {
       SELECT
         user_id,
         DATE_TRUNC('hour', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
-        COUNT(DISTINCT e.event_id) as num_events
+        COUNT(DISTINCT e.id) as num_events
       FROM events e
+      LEFT JOIN
+        users u ON u.user_id = e.user_id
       WHERE
         (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
         AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
-        AND (CAST($3 AS VARCHAR) IS NULL OR JSON_EXTRACT_PATH_TEXT(JSON_SERIALIZE(e.event_attributes), $3) = $4)
+        AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
+        AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
       GROUP BY 
         user_id,
         DATE_TRUNC('hour', CAST(event_created AS TIMESTAMPTZ))
