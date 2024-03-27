@@ -1,5 +1,24 @@
 const { VALID_TIME_UNIT } = require("../lib/globals");
 
+function getAllEventNames() {
+  return `
+    SELECT
+      DISTINCT event_name
+    FROM
+      events
+  `;
+}
+
+function getAllEventAttributes() {
+  return `
+  SELECT 
+    DISTINCT
+      JSON_SERIALIZE(event_attributes)
+    FROM
+      events
+  `
+}
+
 function getTotalEventsBy(timeUnit) {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
@@ -131,10 +150,10 @@ function getMedianPerUserBy(timeUnit) {
         AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
         AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
         AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
-      GROUP BY 
+      GROUP BY
         user_id,
         DATE_TRUNC('hour', CAST(event_created AS TIMESTAMPTZ))
-    ), 
+    ),
     user_event_counts AS (
       SELECT
         u.user_id,
@@ -158,9 +177,11 @@ function getMedianPerUserBy(timeUnit) {
 }
 
 module.exports = {
+  getAllEventNames,
   getTotalEventsBy,
   getAveragePerUserBy,
   getMaxPerUserBy,
   getMinPerUserBy,
   getMedianPerUserBy,
+  getAllEventAttributes,
 };
