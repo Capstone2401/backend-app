@@ -62,6 +62,15 @@ app.get("/events", (req, res, next) => {
   }
 });
 
+app.get("/attributes", async (_req, res, next) => {
+  try {
+    const result = await redshift.getAllAttributes();
+    res.status(200).send(JSON.stringify(result));
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Error handler
 app.use((err, _req, res, _next) => {
   console.error(err); // Writes more extensive information to the console log
