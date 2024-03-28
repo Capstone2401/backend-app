@@ -1,3 +1,5 @@
+const redshift = require("../lib/redshift-pg");
+
 async function handleQueryAttributes(_req, res, next) {
   try {
     const result = await redshift.getAllAttributes();
