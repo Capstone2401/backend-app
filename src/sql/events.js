@@ -16,7 +16,7 @@ function getAllEventAttributes() {
       JSON_SERIALIZE(event_attributes)
     FROM
       events
-  `
+  `;
 }
 
 function getTotalEventsBy(timeUnit) {
@@ -79,7 +79,7 @@ function getMinPerUserBy(timeUnit) {
     SELECT
       DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
       COUNT(DISTINCT e.id) AS calculated_value,
-      user_id
+      e.user_id
     FROM
       events e
     LEFT JOIN
@@ -90,7 +90,7 @@ function getMinPerUserBy(timeUnit) {
       AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
       AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
     GROUP BY
-      ${timeUnit}, user_id
+      ${timeUnit}, e.user_id
   )
   SELECT
     ${timeUnit},
@@ -110,7 +110,7 @@ function getMaxPerUserBy(timeUnit) {
     SELECT
       DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
       COUNT(DISTINCT e.id) AS calculated_value,
-      user_id
+      e.user_id
     FROM
       events e
     LEFT JOIN
@@ -121,7 +121,7 @@ function getMaxPerUserBy(timeUnit) {
       AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
       AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
     GROUP BY
-      ${timeUnit}, user_id
+      ${timeUnit}, e.user_id
   )
   SELECT
     ${timeUnit},
@@ -139,7 +139,7 @@ function getMedianPerUserBy(timeUnit) {
   return `
     WITH event_counts AS (
       SELECT
-        user_id,
+        e.user_id,
         DATE_TRUNC('hour', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
         COUNT(DISTINCT e.id) as num_events
       FROM events e
@@ -151,8 +151,8 @@ function getMedianPerUserBy(timeUnit) {
         AND (CAST($3 AS VARCHAR) IS NULL OR attr_validate($3, JSON_SERIALIZE(e.event_attributes)))
         AND (CAST($4 AS VARCHAR) IS NULL OR attr_validate($4, JSON_SERIALIZE(u.user_attributes)))
       GROUP BY
-        user_id,
-        DATE_TRUNC('hour', CAST(event_created AS TIMESTAMPTZ))
+        e.user_id,
+        ${timeUnit}
     ),
     user_event_counts AS (
       SELECT

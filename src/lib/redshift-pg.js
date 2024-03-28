@@ -5,7 +5,7 @@ const events = require("../sql/events");
 const users = require("../sql/users");
 const { VALID_TIME_UNIT } = require("../lib/globals");
 const formatDataBy = require("../utils/format-records");
-const formatAttributes = require('../utils/format-attributes')
+const formatAttributes = require("../utils/format-attributes");
 
 const AGGREGATE_EVENTS = {
   total: events.getTotalEventsBy,
@@ -45,9 +45,7 @@ async function getAggregatedUsersBy(timeUnit, aggregationType, options) {
     dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
   }
 
-
   const { eventName, filters } = options;
-
 
   const result = await dbQuery(
     AGGREGATE_USERS[aggregationType](timeUnit),
@@ -70,7 +68,6 @@ async function getAggregatedEventsBy(timeUnit, aggregationType, options) {
   if (previous) {
     dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
   }
-
 
   const { eventName, filters } = options;
 
@@ -105,7 +102,7 @@ async function getAllAttributes() {
     let userAttributes = dbQuery(users.getAllUserAttributes());
     result = await Promise.all([eventAttributes, userAttributes]);
     let formattedResult = formatAttributes(result);
-    return formattedResult
+    return formattedResult;
   } catch (error) {
     console.error(error);
   }
