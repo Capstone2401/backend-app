@@ -3,7 +3,8 @@
 const express = require("express");
 const config = require("./utils/config");
 const morgan = require("morgan");
-const apiRouter = require("./routes/api");
+const queryRouter = require("./routes/query");
+const infoRouter = require("./routes/info");
 const { catchAllErrorHandler } = require("./middleware/errors");
 
 const app = express();
@@ -13,7 +14,8 @@ const host = config.HOST || "localhost";
 const port = config.PORT || 3000;
 
 // routes
-app.use("/api", apiRouter);
+app.use("/api/query", queryRouter);
+app.use("/api/info", infoRouter);
 
 // Error handler
 app.use(catchAllErrorHandler);
