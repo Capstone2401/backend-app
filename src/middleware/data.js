@@ -22,14 +22,21 @@ async function handleQueryData(req, res, next) {
 
   let { dateRange, eventName, aggregationType } = req.query;
   try {
-    let result = await redshift.getAggregatedEventsBy(
+    const args = [
       TIMEUNIT_BY_RANGE[dateRange],
       aggregationType,
       {
         previous: PREVIOUS_BY_RANGE[dateRange],
         eventName,
       },
-    );
+    ];
+
+    let result;
+    if (req.path === "/users") {
+      result = await redshift.getAggregatedUsersBy(...args);
+    } else {
+      result = await redshift.getAggregatedEventsBy(...args);
+    }
 
     res.status(200).send(JSON.stringify(result));
   } catch (error) {
