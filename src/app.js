@@ -15,8 +15,8 @@ app.use(morgan("common"));
 app.use(express.json());
 
 // routes
-app.post("/api/query", queryRouter);
-app.post("/api/info", infoRouter);
+app.use("/api/query", queryRouter);
+app.use("/api/info", infoRouter);
 
 // Error handler
 app.use(catchAllErrorHandler);

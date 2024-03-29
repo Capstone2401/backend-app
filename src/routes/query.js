@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { handleQueryData } = require("../middleware/data");
 
-router.get("/events", handleQueryData);
-router.get("/users", handleQueryData);
+router.post("/events", handleQueryData);
+router.post("/users", handleQueryData);
 
 module.exports = router;
