@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - mynetwork
+
   backend:
     image: backend-app:loaf # put our final backend app image here from docker hub
     environment:
@@ -11,6 +22,8 @@ services:
       - "3000:3000"
     depends_on:
       - db
+    networks:
+      - mynetwork
 
   db:
     image: postgres:latest
@@ -23,3 +36,7 @@ services:
       sh -c "psql ${REDSHIFT_CONN_STRING} -f ./sql/redshift-tables.sql"
     volumes:
       - ./src/sql/redshift-tables.sql:/sql/redshift-tables.sql
+
+networks:
+  mynetwork:
+    driver: bridge
