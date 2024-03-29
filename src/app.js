@@ -12,10 +12,11 @@ const host = config.HOST || "localhost";
 const port = config.PORT || 3000;
 
 app.use(morgan("common"));
+app.use(express.json());
 
 // routes
-app.use("/api/query", queryRouter);
-app.use("/api/info", infoRouter);
+app.post("/api/query", queryRouter);
+app.post("/api/info", infoRouter);
 
 // Error handler
 app.use(catchAllErrorHandler);

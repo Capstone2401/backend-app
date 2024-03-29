@@ -20,7 +20,7 @@ async function handleQueryData(req, res, next) {
     "12M": 12,
   };
 
-  let { dateRange, eventName, aggregationType } = req.query;
+  let { dateRange, eventName, aggregationType, filters } = req.body;
   try {
     const args = [
       TIMEUNIT_BY_RANGE[dateRange],
@@ -28,6 +28,7 @@ async function handleQueryData(req, res, next) {
       {
         previous: PREVIOUS_BY_RANGE[dateRange],
         eventName,
+        filters,
       },
     ];
 
