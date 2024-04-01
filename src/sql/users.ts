@@ -1,6 +1,7 @@
-const { VALID_TIME_UNIT } = require("../lib/globals.js");
+import { VALID_TIME_UNIT } from "../lib/globals";
+import { TimeUnit } from "../../types/valid-time";
 
-function getAllUserAttributes() {
+function getAllUserAttributes(): string {
   return `
   SELECT 
     DISTINCT
@@ -10,7 +11,7 @@ function getAllUserAttributes() {
   `;
 }
 
-function getTotalUsersBy(timeUnit) {
+function getTotalUsersBy(timeUnit: TimeUnit): string {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
   return `

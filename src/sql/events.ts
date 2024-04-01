@@ -1,6 +1,7 @@
-const { VALID_TIME_UNIT } = require("../lib/globals");
+import { VALID_TIME_UNIT } from "../lib/globals";
+import { TimeUnit } from "../../types/valid-time";
 
-function getAllEventNames() {
+function getAllEventNames(): string {
   return `
     SELECT
       DISTINCT event_name
@@ -9,7 +10,7 @@ function getAllEventNames() {
   `;
 }
 
-function getAllEventAttributes() {
+function getAllEventAttributes(): string {
   return `
   SELECT 
     DISTINCT
@@ -19,7 +20,7 @@ function getAllEventAttributes() {
   `;
 }
 
-function getTotalEventsBy(timeUnit) {
+function getTotalEventsBy(timeUnit: TimeUnit): string {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
   return `
@@ -40,7 +41,7 @@ function getTotalEventsBy(timeUnit) {
   `;
 }
 
-function getAveragePerUserBy(timeUnit) {
+function getAveragePerUserBy(timeUnit: TimeUnit): string {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
   return `
@@ -71,7 +72,7 @@ function getAveragePerUserBy(timeUnit) {
   `;
 }
 
-function getMinPerUserBy(timeUnit) {
+function getMinPerUserBy(timeUnit: TimeUnit): string {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
   return `
@@ -102,7 +103,7 @@ function getMinPerUserBy(timeUnit) {
   `;
 }
 
-function getMaxPerUserBy(timeUnit) {
+function getMaxPerUserBy(timeUnit: TimeUnit): string {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
   return `
@@ -133,7 +134,7 @@ function getMaxPerUserBy(timeUnit) {
   `;
 }
 
-function getMedianPerUserBy(timeUnit) {
+function getMedianPerUserBy(timeUnit: TimeUnit): string {
   if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
 
   return `
@@ -176,7 +177,7 @@ function getMedianPerUserBy(timeUnit) {
   `;
 }
 
-module.exports = {
+export {
   getAllEventNames,
   getTotalEventsBy,
   getAveragePerUserBy,
