@@ -1,8 +1,8 @@
 import express from "express";
 import morgan from "morgan";
-import config from "./utils/config.js";
-import queryRouter from "./routes/query.js";
-import infoRouter from "./routes/info.js";
+import config from "./utils/config";
+import queryRouter from "./routes/query";
+import infoRouter from "./routes/info";
 import { catchAllErrorHandler } from "./middleware/errors.js";
 
 const app = express();
