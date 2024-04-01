@@ -3,7 +3,7 @@ import morgan from "morgan";
 import config from "./utils/config";
 import queryRouter from "./routes/query";
 import infoRouter from "./routes/info";
-import { catchAllErrorHandler } from "./middleware/errors.js";
+import { catchAllErrorHandler } from "./middleware/errors";
 
 const app = express();
 const host = config.HOST;
