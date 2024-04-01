@@ -31,4 +31,4 @@ async function dbQuery(
   return new Error("Unknown error occured");
 }
 
-module.exports = dbQuery;
+export default dbQuery;

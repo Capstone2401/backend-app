@@ -31,7 +31,7 @@ function getTotalUsersBy(timeUnit: TimeUnit): string {
   `;
 }
 
-module.exports = {
+export default {
   getTotalUsersBy,
   getAllUserAttributes,
 };

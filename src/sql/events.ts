@@ -177,7 +177,7 @@ function getMedianPerUserBy(timeUnit: TimeUnit): string {
   `;
 }
 
-export {
+export default {
   getAllEventNames,
   getTotalEventsBy,
   getAveragePerUserBy,
