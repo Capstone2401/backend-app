@@ -1,32 +1,14 @@
 const redshift = require("../lib/redshift-pg");
 async function handleQueryData(req, res, next) {
-  const TIMEUNIT_BY_RANGE = {
-    Today: "hour",
-    Yesterday: "hour",
-    "7D": "day",
-    "30D": "day",
-    "3M": "month",
-    "6M": "month",
-    "12M": "month",
-  };
+  const { dateRange, eventName, aggregationType, filters } = req.body;
+  const { timeUnit, previous } = dateRange;
 
-  const PREVIOUS_BY_RANGE = {
-    Today: 24,
-    Yesterday: 48,
-    "7D": 7,
-    "30D": 30,
-    "3M": 3,
-    "6M": 6,
-    "12M": 12,
-  };
-
-  let { dateRange, eventName, aggregationType, filters } = req.body;
   try {
     const args = [
-      TIMEUNIT_BY_RANGE[dateRange],
+      timeUnit,
       aggregationType,
       {
-        previous: PREVIOUS_BY_RANGE[dateRange],
+        previous,
         eventName,
         filters,
       },
