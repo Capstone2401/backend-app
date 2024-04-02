@@ -7,25 +7,19 @@ interface Filters {
   users: FilterData;
 }
 
+interface DateRange {
+  timeUnit: "hour" | "day" | "month";
+  previous: number;
+}
+
+type AggregationType = "total" | "minimum" | "maximum" | "average" | "median";
+
 interface QueryModifiers {
-  dateRange: keyof TimeUnitByRange;
+  dateRange: DateRange;
   eventName: string;
-  aggregationType: string;
+  aggregationType: AggregationType;
   filters: Filters;
 }
-
-interface TimeUnitByRange {
-  Today: "hour";
-  "7D": "day";
-  "30D": "day";
-  "3M": "month";
-  "6M": "month";
-  "12M": "month";
-}
-
-type PreviousByRange = {
-  [Key in keyof TimeUnitByRange]: number;
-};
 
 export {
   FilterData,
