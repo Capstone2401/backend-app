@@ -2,7 +2,10 @@ import { Client } from "pg";
 import { QueryResult } from "pg";
 import config from "./config";
 
-function logQuery(statement: string, parameters: string[]): void {
+function logQuery(
+  statement: string,
+  parameters: Array<string | undefined>,
+): void {
   let timeStamp = new Date();
   let formattedTimeStamp = timeStamp.toString().substring(4, 24);
   console.log(formattedTimeStamp, statement, parameters);
@@ -10,7 +13,7 @@ function logQuery(statement: string, parameters: string[]): void {
 
 async function dbQuery(
   statement: string,
-  ...parameters: string[]
+  ...parameters: Array<string | undefined>
 ): Promise<QueryResult | Error> {
   try {
     let client = new Client({ connectionString: config.REDSHIFT_CONN_STRING });
@@ -18,6 +21,7 @@ async function dbQuery(
 
     logQuery(statement, parameters);
 
+    // @ts-ignore
     let result = await client.query(statement, parameters);
     await client.end();
 
