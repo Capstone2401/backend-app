@@ -1,5 +1,6 @@
 import { VALID_TIME_UNIT } from "../lib/globals";
 import { TimeUnit } from "../../types/time";
+import { ResponseError } from "../utils/response-error";
 
 function getAllUserAttributes(): string {
   return `
@@ -12,11 +13,16 @@ function getAllUserAttributes(): string {
 }
 
 function getTotalUsersBy(timeUnit: TimeUnit): string {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     SELECT
-      DATE_TRUNC('${VALID_TIME_UNIT[timeUnit]}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
+      DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
       COUNT(DISTINCT e.user_id) AS calculated_value
     FROM
       events e

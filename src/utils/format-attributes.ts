@@ -1,6 +1,7 @@
 import { QueryResult, QueryResultRow } from "pg";
 import { ResponseError } from "../utils/response-error";
 import { FormattedAttributes } from "../../types/format";
+import log from "../utils/log";
 
 function formatAttributes(result: QueryResult[]): FormattedAttributes {
   const [event, user] = [
@@ -35,7 +36,7 @@ function getDistinctAttributes(attributeArr: QueryResult): Attributes {
       if (error instanceof Error) {
         const logMessage =
           "Error when parsing attributes as JSON" + error.message;
-        console.log(logMessage);
+        log.info(logMessage);
         throw new ResponseError({
           message:
             "There was an unexpcted error while trying to retrieve attributes.",

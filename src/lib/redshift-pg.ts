@@ -48,14 +48,14 @@ async function getAggregatedUsersBy({
 }: QueryArgs) {
   if (!(aggregationType in AGGREGATE_USERS)) {
     throw new ResponseError({
-      message: "Invalid aggregation provided",
+      message: "Invalid aggregation provided " + aggregationType,
       statusCode: 400,
     });
   }
 
   if (!VALID_TIME_UNIT[timeUnit]) {
     throw new ResponseError({
-      message: "Invalid time unit provided",
+      message: "Invalid time unit provided " + timeUnit,
       statusCode: 400,
     });
   }
@@ -88,16 +88,16 @@ async function getAggregatedEventsBy({
   aggregationType,
   options,
 }: QueryArgs) {
-  if (!(aggregationType in AGGREGATE_USERS)) {
+  if (!(aggregationType in AGGREGATE_EVENTS)) {
     throw new ResponseError({
-      message: "Invalid aggregation provided",
+      message: "Invalid aggregation provided " + aggregationType,
       statusCode: 400,
     });
   }
 
   if (!VALID_TIME_UNIT[timeUnit]) {
     throw new ResponseError({
-      message: "Invalid time unit provided",
+      message: "Invalid time unit provided " + timeUnit,
       statusCode: 400,
     });
   }
