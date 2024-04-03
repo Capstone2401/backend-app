@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { QueryParameters, QueryArguments } from "../../types/query-types";
+import {
+  QueryParameters as QueryParams,
+  QueryArguments as QueryArgs,
+} from "../../types/query-types";
 import redshift from "../lib/redshift-pg";
 
 async function handleQueryData(
@@ -7,11 +10,11 @@ async function handleQueryData(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  let { dateRange, eventName, aggregationType, filters }: QueryParameters =
+  let { dateRange, eventName, aggregationType, filters }: QueryParams =
     req.body;
   const { timeUnit, previous } = dateRange;
   try {
-    const args: QueryArguments = {
+    const args: QueryArgs = {
       timeUnit,
       aggregationType,
       options: {
