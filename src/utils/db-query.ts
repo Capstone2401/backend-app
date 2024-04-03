@@ -1,20 +1,22 @@
 import { Client } from "pg";
 import { QueryResult } from "pg";
+import { ResponseError } from "./response-error";
 import config from "./config";
+import log from "./log";
 
 function logQuery(
   statement: string,
-  parameters: Array<string | undefined>,
+  parameters: Array<string | null | undefined>,
 ): void {
   let timeStamp = new Date();
   let formattedTimeStamp = timeStamp.toString().substring(4, 24);
-  console.log(formattedTimeStamp, statement, parameters);
+  log.info(formattedTimeStamp, statement, parameters);
 }
 
 async function dbQuery(
   statement: string,
-  ...parameters: Array<string | undefined>
-): Promise<QueryResult | Error> {
+  ...parameters: Array<string | null | undefined>
+): Promise<QueryResult> {
   try {
     let client = new Client({ connectionString: config.REDSHIFT_CONN_STRING });
     await client.connect();
@@ -28,11 +30,24 @@ async function dbQuery(
     return result;
   } catch (error) {
     if (error instanceof Error) {
-      return error;
+      log.error(new Error(error.message));
+      throw new ResponseError({
+        message: "There was an unexpcted error when trying to query your data.",
+        statusCode: 500,
+      });
     }
   }
 
-  return new Error("Unknown error occured");
+  const error = new Error(
+    "An unknown error occured when trying to query Redshift with pg.",
+  );
+
+  log.error(error);
+
+  throw new ResponseError({
+    message: "An unexpcted error occured.",
+    statusCode: 500,
+  });
 }
 
 export default dbQuery;

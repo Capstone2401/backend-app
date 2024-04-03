@@ -1,13 +1,22 @@
+import log from "../utils/log";
 import { Request, Response, NextFunction } from "express";
+import { ResponseError } from "../utils/response-error";
 
 function catchAllErrorHandler(
-  err: Error,
+  error: Error | ResponseError,
   _req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
-  console.error(err); // Writes more extensive information to the console log
-  res.status(404).send(err.message); // TODO; Tranform to more granular error messages for 4XX and 5XX
+  log.error(error);
+
+  if (error instanceof ResponseError) {
+    res.status(error.statusCode).send({
+      error: error.message,
+    });
+  } else {
+    res.status(500).send({ error: error.message });
+  }
 }
 
 export { catchAllErrorHandler };

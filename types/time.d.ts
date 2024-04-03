@@ -4,12 +4,11 @@ interface TimeUnitValidation {
   month: true;
 }
 
-type ValidTime = "hour" | "day" | "month";
-type TimeUnit = keyof TimeUnitValidation;
+type TimeUnit = "hour" | "day" | "month";
 type DateOffsetMethod = (offset: number, currDate: Date) => Date;
 
 type DateMap<T> = {
-  [K in Valid]: T;
+  [K in TimeUnit]: T;
 };
 
 export { TimeUnitValidation, TimeUnit, DateOffsetMethod, DateMap };

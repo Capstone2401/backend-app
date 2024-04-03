@@ -1,8 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import {
-  QueryParameters as QueryParams,
-  QueryArguments as QueryArgs,
-} from "../../types/query-types";
+import { QueryParams, QueryArgs } from "../../types/query-types";
 import redshift from "../lib/redshift-pg";
 
 async function handleQueryData(

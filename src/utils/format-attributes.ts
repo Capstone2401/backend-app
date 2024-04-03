@@ -1,18 +1,16 @@
 import { QueryResult, QueryResultRow } from "pg";
+import { ResponseError } from "../utils/response-error";
+import { FormattedAttributes } from "../../types/format";
 
-interface FormattedAttributes {
-  event: {
-    [key: string]: string[];
-  };
-  user: {
-    [key: string]: string[];
-  };
-}
+function formatAttributes(result: QueryResult[]): FormattedAttributes {
+  const [event, user] = [
+    getDistinctAttributes(result[0]),
+    getDistinctAttributes(result[1]),
+  ];
 
-function formatAttributes(result: QueryResult[]) {
   let attributeObj: FormattedAttributes = {
-    event: getDistinctAttributes(result[0]),
-    user: getDistinctAttributes(result[1]),
+    event,
+    user,
   };
 
   return attributeObj;
@@ -26,7 +24,7 @@ interface ParsedJson {
   [key: string]: unknown;
 }
 
-function getDistinctAttributes(attributeArr: QueryResult) {
+function getDistinctAttributes(attributeArr: QueryResult): Attributes {
   const formattedAtrributes: Attributes = {};
   attributeArr.rows.forEach((row: QueryResultRow) => {
     let attributes: ParsedJson = {};
@@ -35,8 +33,14 @@ function getDistinctAttributes(attributeArr: QueryResult) {
       attributes = JSON.parse(row.json_serialize);
     } catch (error) {
       if (error instanceof Error) {
-        console.log("Error when parsing attributes as JSON", error.message);
-        throw error;
+        const logMessage =
+          "Error when parsing attributes as JSON" + error.message;
+        console.log(logMessage);
+        throw new ResponseError({
+          message:
+            "There was an unexpcted error while trying to retrieve attributes.",
+          statusCode: 500,
+        });
       }
     }
 

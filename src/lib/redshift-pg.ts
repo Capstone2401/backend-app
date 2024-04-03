@@ -6,9 +6,11 @@ import formatDataBy from "../utils/format-records";
 import formatAttributes from "../utils/format-attributes";
 
 import { QueryResultRow } from "pg";
-import { QueryArguments } from "../../types/query-types";
+import { QueryArgs } from "../../types/query-types";
 import { AggregateEvents, AggregateUsers } from "../../types/redshift-types";
 import { DateMap, DateOffsetMethod } from "../../types/time";
+import { ResponseError } from "../utils/response-error";
+import { FormattedAttributes } from "../../types/format";
 
 const AGGREGATE_EVENTS: AggregateEvents = {
   total: events.getTotalEventsBy,
@@ -43,35 +45,31 @@ async function getAggregatedUsersBy({
   timeUnit,
   aggregationType,
   options,
-}: QueryArguments) {
+}: QueryArgs) {
   if (!(aggregationType in AGGREGATE_USERS)) {
-    return new Error("Invalid aggregation provided");
+    throw new ResponseError({
+      message: "Invalid aggregation provided",
+      statusCode: 400,
+    });
   }
 
   if (!VALID_TIME_UNIT[timeUnit]) {
-    return new Error("Invalid time unit provided");
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
   }
 
-  let previous;
-  let filters;
-  let eventName;
-
-  if (options) {
-    previous = options.previous;
-    filters = options.filters;
-    eventName = options.eventName;
-  }
+  let { previous, filters, eventName } = options ?? {
+    previous: null,
+    filters: null,
+    eventName: null,
+  };
 
   let dateRangeStart;
+  previous = previous ?? 0;
 
-  if (!previous) {
-    previous = 0;
-  }
-
-  dateRangeStart = ADJUST_DATE[timeUnit as keyof AdjustDate](
-    previous,
-    new Date(),
-  );
+  dateRangeStart = ADJUST_DATE[timeUnit](previous, new Date());
 
   const result = await dbQuery(
     AGGREGATE_USERS[aggregationType as keyof AggregateUsers](timeUnit),
@@ -81,10 +79,6 @@ async function getAggregatedUsersBy({
     filters ? JSON.stringify(filters.users) : "{}",
   );
 
-  if (result instanceof Error) {
-    return Error;
-  }
-
   const records: QueryResultRow[] = result.rows;
   return formatDataBy(timeUnit, records, previous);
 }
@@ -93,30 +87,29 @@ async function getAggregatedEventsBy({
   timeUnit,
   aggregationType,
   options,
-}: QueryArguments) {
-  if (!(aggregationType in AGGREGATE_EVENTS)) {
-    return new Error("Invalid aggregation provided");
+}: QueryArgs) {
+  if (!(aggregationType in AGGREGATE_USERS)) {
+    throw new ResponseError({
+      message: "Invalid aggregation provided",
+      statusCode: 400,
+    });
   }
 
   if (!VALID_TIME_UNIT[timeUnit]) {
-    return new Error("Invalid time unit provided");
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
   }
 
-  let previous;
-  let filters;
-  let eventName;
-
-  if (options) {
-    previous = options.previous;
-    filters = options.filters;
-    eventName = options.eventName;
-  }
+  let { previous, filters, eventName } = options ?? {
+    previous: null,
+    filters: null,
+    eventName: null,
+  };
 
   let dateRangeStart;
-
-  if (!previous) {
-    previous = 0;
-  }
+  previous = previous ?? 0;
 
   dateRangeStart = ADJUST_DATE[timeUnit as keyof AdjustDate](
     previous,
@@ -131,25 +124,16 @@ async function getAggregatedEventsBy({
     filters ? JSON.stringify(filters.users) : "{}",
   );
 
-  if (result instanceof Error) {
-    return Error;
-  }
-
   const records: QueryResultRow[] = result.rows;
   return formatDataBy(timeUnit, records, previous);
 }
 
-async function getAllEventNames() {
+async function getAllEventNames(): Promise<QueryResultRow[]> {
   const result = await dbQuery(events.getAllEventNames());
-
-  if (result instanceof Error) {
-    return result;
-  }
-
   return result.rows;
 }
 
-async function getAllAttributes() {
+async function getAllAttributes(): Promise<FormattedAttributes> {
   const eventAttributesPromise = dbQuery(events.getAllEventAttributes());
   const userAttributesPromise = dbQuery(users.getAllUserAttributes());
 
@@ -157,14 +141,6 @@ async function getAllAttributes() {
     eventAttributesPromise,
     userAttributesPromise,
   ]);
-
-  if (eventAttributesResult instanceof Error) {
-    return eventAttributesResult;
-  }
-
-  if (userAttributesResult instanceof Error) {
-    return userAttributesResult;
-  }
 
   const formattedResult = formatAttributes([
     eventAttributesResult,
