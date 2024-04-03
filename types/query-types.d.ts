@@ -15,14 +15,14 @@ interface DateRange {
   previous: number;
 }
 
-interface QueryParameters {
+interface QueryParams {
   dateRange: DateRange;
   eventName?: string;
   aggregationType: AggregationType;
   filters?: Filters;
 }
 
-interface QueryArguments {
+interface QueryArgs {
   timeUnit: TimeUnit;
   aggregationType: AggregationType;
   options?: {
@@ -32,4 +32,4 @@ interface QueryArguments {
   };
 }
 
-export { QueryParameters, QueryArguments };
+export { QueryParams, QueryArgs };
