@@ -1,5 +1,5 @@
 import { VALID_TIME_UNIT } from "../lib/globals";
-import { TimeUnit } from "../../types/valid-time";
+import { TimeUnit } from "../../types/time";
 
 function getAllEventNames(): string {
   return `

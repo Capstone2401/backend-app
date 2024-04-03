@@ -1,6 +1,6 @@
-import { TimeUnitValidation } from "../../types/valid-time";
+import { DateMap } from "../../types/time";
 
-const VALID_TIME_UNIT: TimeUnitValidation = {
+const VALID_TIME_UNIT: DateMap<true> = {
   hour: true,
   day: true,
   month: true,
