@@ -14,6 +14,12 @@ const port = config.PORT || 3000;
 app.use(morgan("common"));
 app.use(express.json());
 
+// health check route
+app.use("/health", (req, res) => {
+  res.status(200).send("Healthy")
+
+});
+
 // routes
 app.use("/api/query", queryRouter);
 app.use("/api/info", infoRouter);
