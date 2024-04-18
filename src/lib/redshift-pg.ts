@@ -80,7 +80,7 @@ async function getAggregatedUsersBy({
   );
 
   const records: QueryResultRow[] = result.rows;
-  return formatDataBy(timeUnit, records, previous);
+  return formatDataBy(timeUnit, aggregationType, records, previous);
 }
 
 async function getAggregatedEventsBy({
@@ -125,7 +125,7 @@ async function getAggregatedEventsBy({
   );
 
   const records: QueryResultRow[] = result.rows;
-  return formatDataBy(timeUnit, records, previous);
+  return formatDataBy(timeUnit, aggregationType, records, previous);
 }
 
 async function getAllEventNames(): Promise<QueryResultRow[]> {

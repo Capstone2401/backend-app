@@ -1,4 +1,5 @@
 import { DateOffsetMethod, DateMap, TimeUnit } from "../../types/time";
+import { AggregateEvents } from "../../types/redshift-types";
 import { QueryResultRow } from "pg";
 
 const MS_IN_HOUR = 60 * 60 * 1000; // milliseconds
@@ -9,11 +10,16 @@ type FormatDate = DateMap<FormatDateMethod>;
 
 interface PastNRecordsValue {
   [key: string]: string | number;
-  calculated_value: number;
 }
 
 type PastNRecords = {
   [key: string]: PastNRecordsValue;
+};
+
+type PastNRecordsResult = {
+  values: PastNRecordsValue[];
+  aggregationType: string;
+  timeUnit: TimeUnit;
 };
 
 const GENERATE_DATE: DateMap<DateOffsetMethod> = {
@@ -35,9 +41,10 @@ const FORMAT_DATE: FormatDate = {
 
 function formatDataBy(
   timeUnit: TimeUnit,
+  aggregationType: keyof AggregateEvents,
   records: QueryResultRow[],
   previous: number,
-): PastNRecordsValue[] {
+): PastNRecordsResult {
   const currentDate = new Date();
   const pastNRecords: PastNRecords = {};
 
@@ -47,20 +54,20 @@ function formatDataBy(
 
     pastNRecords[formatted] = {
       [timeUnit]: formatted,
-      calculated_value: 0,
+      [aggregationType]: 0,
     };
   }
 
   for (const record of records) {
     const recordKey = FORMAT_DATE[timeUnit](record[timeUnit]);
     if (pastNRecords[recordKey]) {
-      pastNRecords[recordKey].calculated_value = Number(
+      pastNRecords[recordKey][aggregationType] = Number(
         record.calculated_value,
       );
     }
   }
 
-  return Object.values(pastNRecords);
+  return { aggregationType, timeUnit, values: Object.values(pastNRecords) };
 }
 
 export default formatDataBy;
