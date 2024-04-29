@@ -1,5 +1,5 @@
 import { VALID_TIME_UNIT } from "../lib/globals";
-import { TimeUnit } from "../../types/time";
+import { TimeUnit } from "../types/time";
 import { ResponseError } from "../utils/response-error";
 
 function getAllUserAttributes(): string {

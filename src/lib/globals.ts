@@ -1,4 +1,4 @@
-import { DateMap } from "../../types/time";
+import { DateMap } from "../types/time";
 
 const VALID_TIME_UNIT: DateMap<true> = {
   hour: true,

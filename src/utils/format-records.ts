@@ -1,5 +1,5 @@
-import { DateOffsetMethod, DateMap, TimeUnit } from "../../types/time";
-import { AggregateEvents } from "../../types/redshift-types";
+import { DateOffsetMethod, DateMap, TimeUnit } from "../types/time";
+import { AggregateEvents } from "../types/redshift";
 import { QueryResultRow } from "pg";
 
 const MS_IN_HOUR = 60 * 60 * 1000; // milliseconds

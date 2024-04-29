@@ -6,11 +6,11 @@ import formatDataBy from "../utils/format-records";
 import formatAttributes from "../utils/format-attributes";
 
 import { QueryResultRow } from "pg";
-import { QueryArgs } from "../../types/query-types";
-import { AggregateEvents, AggregateUsers } from "../../types/redshift-types";
-import { DateMap, DateOffsetMethod } from "../../types/time";
+import { QueryArgs } from "../types/query";
+import { AggregateEvents, AggregateUsers } from "../types/redshift";
+import { DateMap, DateOffsetMethod } from "../types/time";
 import { ResponseError } from "../utils/response-error";
-import { FormattedAttributes } from "../../types/format";
+import { FormattedAttributes } from "../types/format";
 
 const AGGREGATE_EVENTS: AggregateEvents = {
   total: events.getTotalEventsBy,
@@ -117,7 +117,7 @@ async function getAggregatedEventsBy({
   );
 
   const result = await dbQuery(
-    AGGREGATE_EVENTS[aggregationType](timeUnit),
+    AGGREGATE_EVENTS[aggregationType as keyof AggregateEvents](timeUnit),
     dateRangeStart?.toISOString(),
     eventName,
     filters ? JSON.stringify(filters.events) : "{}",

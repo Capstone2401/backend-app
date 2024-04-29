@@ -1,6 +1,6 @@
 import { QueryResult, QueryResultRow } from "pg";
 import { ResponseError } from "../utils/response-error";
-import { FormattedAttributes } from "../../types/format";
+import { FormattedAttributes } from "../types/format";
 import log from "../utils/log";
 
 function formatAttributes(result: QueryResult[]): FormattedAttributes {
