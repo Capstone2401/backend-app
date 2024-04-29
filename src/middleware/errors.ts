@@ -1,6 +1,6 @@
-import log from "../utils/log";
+import log from "src/utils/log";
 import { Request, Response, NextFunction } from "express";
-import { ResponseError } from "../utils/response-error";
+import { ResponseError } from "src/utils/response-error";
 
 function catchAllErrorHandler(
   error: Error | ResponseError,

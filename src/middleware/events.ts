@@ -1,4 +1,4 @@
-import redshift from "../lib/redshift-pg";
+import redshift from "src/lib/redshift-pg";
 import { Request, Response, NextFunction } from "express";
 
 async function handleQueryEventNames(

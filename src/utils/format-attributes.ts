@@ -1,7 +1,7 @@
 import { QueryResult, QueryResultRow } from "pg";
-import { ResponseError } from "../utils/response-error";
-import { FormattedAttributes } from "../types/format";
-import log from "../utils/log";
+import { ResponseError } from "src/utils/response-error";
+import { FormattedAttributes } from "src/types/format";
+import log from "src/utils/log";
 
 function formatAttributes(result: QueryResult[]): FormattedAttributes {
   const [event, user] = [

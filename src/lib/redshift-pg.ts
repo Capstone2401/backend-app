@@ -1,16 +1,16 @@
-import dbQuery from "../utils/db-query";
-import events from "../sql/events";
-import users from "../sql/users";
-import { VALID_TIME_UNIT } from "../lib/globals";
-import formatDataBy from "../utils/format-records";
-import formatAttributes from "../utils/format-attributes";
+import dbQuery from "src/utils/db-query";
+import events from "src/sql/events";
+import users from "src/sql/users";
+import { VALID_TIME_UNIT } from "src/lib/globals";
+import formatDataBy from "src/utils/format-records";
+import formatAttributes from "src/utils/format-attributes";
 
 import { QueryResultRow } from "pg";
-import { QueryArgs } from "../types/query";
-import { AggregateEvents, AggregateUsers } from "../types/redshift";
-import { DateMap, DateOffsetMethod } from "../types/time";
-import { ResponseError } from "../utils/response-error";
-import { FormattedAttributes } from "../types/format";
+import { QueryArgs } from "src/types/query";
+import { AggregateEvents, AggregateUsers } from "src/types/redshift";
+import { DateMap, DateOffsetMethod } from "src/types/time";
+import { ResponseError } from "src/utils/response-error";
+import { FormattedAttributes } from "src/types/format";
 
 const AGGREGATE_EVENTS: AggregateEvents = {
   total: events.getTotalEventsBy,

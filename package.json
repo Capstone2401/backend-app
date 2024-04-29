@@ -7,9 +7,8 @@
     "lib": "lib"
   },
   "scripts": {
-    "dev": "npx nodemon src/app.ts",
-    "start": "ts-node src/app.ts",
-    "build": "tsc"
+    "dev": "npx nodemon --require tsconfig-paths/register src/app.ts",
+    "start": "ts-node --transpile-only --require tsconfig-paths/register src/app.ts"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +29,7 @@
     "eslint": "^8.56.0",
     "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.4.3"
   }
 }
