@@ -3,7 +3,8 @@ import { AggregateEvents } from "src/types/redshift";
 import { QueryResultRow } from "pg";
 
 const MS_IN_HOUR = 60 * 60 * 1000; // milliseconds
-const MS_IN_DAY = 60 * 60 * 24 * 1000; // milliseconds
+const MS_IN_DAY = MS_IN_HOUR * 24; // milliseconds
+const MS_IN_WEEK = MS_IN_DAY * 7;
 
 type FormatDateMethod = (timestamp: Date) => keyof PastNRecords;
 type FormatDate = DateMap<FormatDateMethod>;
@@ -31,12 +32,22 @@ const GENERATE_DATE: DateMap<DateOffsetMethod> = {
     monthTimestamp.setMonth(currDate.getMonth() - offset);
     return monthTimestamp;
   },
+  week: (offset, currDate) => {
+    return new Date(currDate.getTime() - offset * MS_IN_WEEK);
+  },
 };
 
 const FORMAT_DATE: FormatDate = {
   hour: (timestamp) => timestamp.toISOString().slice(0, 13) + ":00",
   day: (timestamp) => timestamp.toISOString().slice(0, 10),
   month: (timestamp) => timestamp.toISOString().slice(0, 7),
+  week: (timestamp) => {
+    const today = new Date(timestamp);
+    const dayOfWeek = today.getDay(); // Get the current day of the week
+    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? 0 : 1); // Adjust to start of the week
+    today.setDate(diff); // Set the date to the start of the week
+    return today.toISOString().slice(0, 10); // Return the ISO string representing the start of the week
+  },
 };
 
 function formatDataBy(

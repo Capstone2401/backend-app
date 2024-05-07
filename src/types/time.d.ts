@@ -1,10 +1,11 @@
 interface TimeUnitValidation {
   hour: true;
   day: true;
+  week: true;
   month: true;
 }
 
-type TimeUnit = "hour" | "day" | "month";
+type TimeUnit = "hour" | "day" | "week" | "month";
 type DateOffsetMethod = (offset: number, currDate: Date) => Date;
 
 type DateMap<T> = {

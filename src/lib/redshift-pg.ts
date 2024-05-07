@@ -39,6 +39,10 @@ const ADJUST_DATE: AdjustDate = {
     currDate.setMonth(currDate.getMonth() - offset);
     return currDate;
   },
+  week: (offset, currDate) => {
+    currDate.setDate(currDate.getDate() - offset * 7);
+    return currDate;
+  },
 };
 
 async function getAggregatedUsersBy({
