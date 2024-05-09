@@ -1,6 +1,8 @@
-const { VALID_TIME_UNIT } = require("../lib/globals.js");
+import { VALID_TIME_UNIT } from "src/lib/globals";
+import { TimeUnit } from "src/types/time";
+import { ResponseError } from "src/utils/response-error";
 
-function getAllUserAttributes() {
+function getAllUserAttributes(): string {
   return `
   SELECT 
     DISTINCT
@@ -10,12 +12,17 @@ function getAllUserAttributes() {
   `;
 }
 
-function getTotalUsersBy(timeUnit) {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+function getTotalUsersBy(timeUnit: TimeUnit): string {
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     SELECT
-      DATE_TRUNC('${VALID_TIME_UNIT[timeUnit]}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
+      DATE_TRUNC('${timeUnit}', CAST(event_created AS TIMESTAMPTZ)) AS ${timeUnit},
       COUNT(DISTINCT e.user_id) AS calculated_value
     FROM
       events e
@@ -30,7 +37,7 @@ function getTotalUsersBy(timeUnit) {
   `;
 }
 
-module.exports = {
+export default {
   getTotalUsersBy,
   getAllUserAttributes,
 };

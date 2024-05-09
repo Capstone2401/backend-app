@@ -1,6 +1,8 @@
-const { VALID_TIME_UNIT } = require("../lib/globals");
+import { VALID_TIME_UNIT } from "src/lib/globals";
+import { ResponseError } from "src/utils/response-error";
+import { TimeUnit } from "src/types/time";
 
-function getAllEventNames() {
+function getAllEventNames(): string {
   return `
     SELECT
       DISTINCT event_name
@@ -9,7 +11,7 @@ function getAllEventNames() {
   `;
 }
 
-function getAllEventAttributes() {
+function getAllEventAttributes(): string {
   return `
   SELECT 
     DISTINCT
@@ -19,8 +21,13 @@ function getAllEventAttributes() {
   `;
 }
 
-function getTotalEventsBy(timeUnit) {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+function getTotalEventsBy(timeUnit: TimeUnit): string {
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     SELECT
@@ -40,8 +47,13 @@ function getTotalEventsBy(timeUnit) {
   `;
 }
 
-function getAveragePerUserBy(timeUnit) {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+function getAveragePerUserBy(timeUnit: TimeUnit): string {
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     WITH events_per_user_per_${timeUnit} AS (
@@ -71,8 +83,13 @@ function getAveragePerUserBy(timeUnit) {
   `;
 }
 
-function getMinPerUserBy(timeUnit) {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+function getMinPerUserBy(timeUnit: TimeUnit): string {
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     WITH events_per_user_per_${timeUnit} AS (
@@ -102,8 +119,13 @@ function getMinPerUserBy(timeUnit) {
   `;
 }
 
-function getMaxPerUserBy(timeUnit) {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+function getMaxPerUserBy(timeUnit: TimeUnit): string {
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     WITH events_per_user_per_${timeUnit} AS (
@@ -133,8 +155,13 @@ function getMaxPerUserBy(timeUnit) {
   `;
 }
 
-function getMedianPerUserBy(timeUnit) {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+function getMedianPerUserBy(timeUnit: TimeUnit): string {
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     WITH event_counts AS (
@@ -176,7 +203,7 @@ function getMedianPerUserBy(timeUnit) {
   `;
 }
 
-module.exports = {
+export default {
   getAllEventNames,
   getTotalEventsBy,
   getAveragePerUserBy,
