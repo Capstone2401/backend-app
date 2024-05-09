@@ -26,7 +26,7 @@ interface ParsedJson {
 }
 
 function getDistinctAttributes(attributeArr: QueryResult): Attributes {
-  const formattedAtrributes: Attributes = {};
+  const formattedAttributes: Attributes = {};
   attributeArr.rows.forEach((row: QueryResultRow) => {
     let attributes: ParsedJson = {};
 
@@ -39,7 +39,7 @@ function getDistinctAttributes(attributeArr: QueryResult): Attributes {
         log.info(logMessage);
         throw new ResponseError({
           message:
-            "There was an unexpcted error while trying to retrieve attributes.",
+            "There was an unexpected error while trying to retrieve attributes.",
           statusCode: 500,
         });
       }
@@ -47,19 +47,19 @@ function getDistinctAttributes(attributeArr: QueryResult): Attributes {
 
     for (let attribute in attributes) {
       const value = attributes[attribute];
-      if (!formattedAtrributes.hasOwnProperty(attribute)) {
-        formattedAtrributes[attribute] = [];
+      if (!formattedAttributes.hasOwnProperty(attribute)) {
+        formattedAttributes[attribute] = [];
       }
       if (
         typeof value === "string" &&
-        !formattedAtrributes[attribute].includes(value)
+        !formattedAttributes[attribute].includes(value)
       ) {
-        formattedAtrributes[attribute].push(String(value));
+        formattedAttributes[attribute].push(String(value));
       }
     }
   });
 
-  return formattedAtrributes;
+  return formattedAttributes;
 }
 
 export default formatAttributes;

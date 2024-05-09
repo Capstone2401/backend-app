@@ -32,20 +32,21 @@ async function dbQuery(
     if (error instanceof Error) {
       log.error(new Error(error.message));
       throw new ResponseError({
-        message: "There was an unexpcted error when trying to query your data.",
+        message:
+          "There was an unexpected error when trying to query your data.",
         statusCode: 500,
       });
     }
   }
 
   const error = new Error(
-    "An unknown error occured when trying to query Redshift with pg.",
+    "An unknown error occurred when trying to query Redshift with pg.",
   );
 
   log.error(error);
 
   throw new ResponseError({
-    message: "An unexpcted error occured.",
+    message: "An unexpected error occured.",
     statusCode: 500,
   });
 }

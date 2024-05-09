@@ -1,4 +1,4 @@
-type ReponseErrorParams = {
+type ResponseErrorParams = {
   statusCode: number;
   message: string;
 };
@@ -6,7 +6,7 @@ type ReponseErrorParams = {
 class ResponseError extends Error {
   readonly statusCode: number;
 
-  constructor({ message, statusCode }: ReponseErrorParams) {
+  constructor({ message, statusCode }: ResponseErrorParams) {
     super(message);
     this.statusCode = statusCode;
     Error.captureStackTrace(this, this.constructor);
