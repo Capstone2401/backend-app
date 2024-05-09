@@ -1,4 +1,5 @@
 import { VALID_TIME_UNIT } from "src/lib/globals";
+import { ResponseError } from "src/utils/response-error";
 import { TimeUnit } from "src/types/time";
 
 function getAllEventNames(): string {
@@ -21,7 +22,12 @@ function getAllEventAttributes(): string {
 }
 
 function getTotalEventsBy(timeUnit: TimeUnit): string {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     SELECT
@@ -42,7 +48,12 @@ function getTotalEventsBy(timeUnit: TimeUnit): string {
 }
 
 function getAveragePerUserBy(timeUnit: TimeUnit): string {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     WITH events_per_user_per_${timeUnit} AS (
@@ -73,7 +84,12 @@ function getAveragePerUserBy(timeUnit: TimeUnit): string {
 }
 
 function getMinPerUserBy(timeUnit: TimeUnit): string {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     WITH events_per_user_per_${timeUnit} AS (
@@ -104,7 +120,12 @@ function getMinPerUserBy(timeUnit: TimeUnit): string {
 }
 
 function getMaxPerUserBy(timeUnit: TimeUnit): string {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     WITH events_per_user_per_${timeUnit} AS (
@@ -135,7 +156,12 @@ function getMaxPerUserBy(timeUnit: TimeUnit): string {
 }
 
 function getMedianPerUserBy(timeUnit: TimeUnit): string {
-  if (!VALID_TIME_UNIT[timeUnit]) return "Invalid time unit provided";
+  if (!VALID_TIME_UNIT[timeUnit]) {
+    throw new ResponseError({
+      message: "Invalid time unit provided",
+      statusCode: 400,
+    });
+  }
 
   return `
     WITH event_counts AS (
