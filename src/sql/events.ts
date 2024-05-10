@@ -172,7 +172,7 @@ function getMedianPerUserBy(timeUnit: TimeUnit): string {
       FROM
           events e
       LEFT JOIN
-      users u ON e.event_created <= u.user_created
+      users u ON e.event_created = u.user_created
       WHERE
           (CAST($1 AS TIMESTAMP) IS NULL OR e.event_created BETWEEN $1 AND SYSDATE)
           AND (CAST($2 AS VARCHAR) IS NULL OR e.event_name = $2)
