@@ -8,8 +8,6 @@ RUN npm install
 
 COPY src/ ./src
 
-RUN npm install typescript ts-node -g
-
 EXPOSE 3000
 
 CMD ["npm", "start"]
