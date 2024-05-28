@@ -8,7 +8,7 @@ async function handleQueryData(
   next: NextFunction,
 ): Promise<void> {
   let { dateRange, eventName, aggregationType, filters }: QueryParams =
-    req.body;
+    req.query as unknown as QueryParams;
   const { timeUnit, previous } = dateRange;
   try {
     const args: QueryArgs = {
