@@ -43,8 +43,6 @@
 }
 ```
 
----
-
 ## Data Endpoints
 
 ### Events Endpoint
@@ -62,11 +60,12 @@
 - **Response:**
   - **Status Code:** 200 OK
   - **Body:** Aggregated event data in JSON format.
-
-**Example of url-encoded query parameters
+---
+**Example of url-encoded query parameters**
 ```
 dateRange[timeUnit]=day&dateRange[previous]=7&eventName=login&aggregationType=total&filters[platform]=web
 ```
+---
 **Example of decoded query parameters:**
 ```json
 {
@@ -81,7 +80,7 @@ dateRange[timeUnit]=day&dateRange[previous]=7&eventName=login&aggregationType=to
   }
 }
 ```
-
+---
 **Example Response Body:**
 ```json
 [
@@ -121,12 +120,14 @@ dateRange[timeUnit]=day&dateRange[previous]=7&eventName=login&aggregationType=to
   - **Status Code:** 200 OK
   - **Body:** Aggregated user data in JSON format.
 
-**Example of url-encoded query parameters**
+---
+**Example of url-encoded query parameters:**
 ```
 dateRange[timeUnit]=month&dateRange[previous]=1&aggregationType=total&filters[country]=US
 ```
-
+---
 **Example of decoded query parameters:**
+
 ```json
 {
   "dateRange": {
@@ -139,7 +140,7 @@ dateRange[timeUnit]=month&dateRange[previous]=1&aggregationType=total&filters[co
   }
 }
 ```
-
+---
 **Example Response Body:**
 ```json
 [
