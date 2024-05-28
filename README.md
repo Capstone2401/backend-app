@@ -108,7 +108,7 @@ dateRange[timeUnit]=day&dateRange[previous]=7&eventName=login&aggregationType=to
 ### Users Endpoint
 
 - **URL:** `/api/query/users`
-- **Method:** POST
+- **Method:** GET
 - **Description:** Retrieves aggregated user data based on specified query parameters.
 - **Request Body:**
   - `dateRange` (object): Object containing information about the date range for the query.
