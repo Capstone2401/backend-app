@@ -1,15 +1,26 @@
 import { Request, Response, NextFunction } from "express";
-import { QueryParams, QueryArgs } from "src/types/query";
+import { QueryArgs } from "src/types/query";
+import isQueryParams from "src/types/query-params";
 import redshift from "src/lib/redshift-pg";
+import { ResponseError } from "src/utils/response-error";
 
 async function handleQueryData(
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  let { dateRange, eventName, aggregationType, filters }: QueryParams =
-    req.query as unknown as QueryParams;
+  const queryParams = req.query as unknown;
+
+  if (!isQueryParams(queryParams)) {
+    throw new ResponseError({
+      message: "Invalid query parameters. Refer to docs for correct format.",
+      statusCode: 400,
+    });
+  }
+
+  const { dateRange, eventName, aggregationType, filters } = queryParams;
   const { timeUnit, previous } = dateRange;
+
   try {
     const args: QueryArgs = {
       timeUnit,
